@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 
+
 def processImage(path : str)->list[list[int]]:
     '''
     loads and processes image for convolution
