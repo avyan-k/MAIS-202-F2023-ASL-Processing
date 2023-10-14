@@ -1,6 +1,11 @@
 import cv2
 import numpy as np
 
+import tensorflow as tf
+from tensorflow.keras import datasets, layers, models
+import matplotlib.pyplot as plt
+
+
 def processImage(path : str)->list[list[int]]:
     '''
     loads and processes image for convolution
@@ -27,8 +32,8 @@ def convolutionImage(image : np.array, kernel : np.array) -> list[list[int]]:
 
 
 if __name__ == "__main__":
-    test1 = processImage(r"images\test_image1.png")
-    test2 = processImage(r"images\test_image2.png")
+    test1 = processImage(r"images/test_image1.png")
+    test2 = processImage(r"images/test_image2.png")
     #sobel operators, taken from https://www.tutorialspoint.com/dip/sobel_operator.htm
     sobel_x = np.array([[-1,0,1],
                         [-2,0,2],
