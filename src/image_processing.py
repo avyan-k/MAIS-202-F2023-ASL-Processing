@@ -1,9 +1,10 @@
 import cv2
 import numpy as np
-
 import tensorflow as tf
 from tensorflow.keras import datasets, layers, models
+from tensorflow.keras.preprocessing import image_dataset_from_directory
 import matplotlib.pyplot as plt
+import opendatasets as od
 
 
 def processImage(path : str)->list[list[int]]:
@@ -26,9 +27,6 @@ def convolutionImage(image : np.array, kernel : np.array) -> list[list[int]]:
         for x in range(convoluted_image.shape[0]-1):
             convoluted_image[x,y] = np.dot(image[x:x+kernel_width,y:y+kernel_height].flatten(),kernel.flatten())  #convolution formula
     return convoluted_image
-
-
-
 
 
 if __name__ == "__main__":
