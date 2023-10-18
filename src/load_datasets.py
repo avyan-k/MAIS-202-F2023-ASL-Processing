@@ -14,12 +14,12 @@ def load_data_to_tensor() -> (tf.data.Dataset,tf.data.Dataset):
     train_ds = tf.keras.utils.image_dataset_from_directory(
     r"synthetic-asl-alphabet/Train_Alphabet",
     seed=1209,
-    image_size=(513, 512),
+    image_size=(512, 512),
     batch_size=32) 
     test_ds = tf.keras.utils.image_dataset_from_directory(
     r"synthetic-asl-alphabet/Test_Alphabet",
     seed=1209,
-    image_size=(513, 512),
+    image_size=(512, 512),
     batch_size=32) 
     return test_ds,train_ds
 
@@ -35,13 +35,16 @@ def show_images(dataset : tf.data.Dataset) -> None :
     plt.figure(figsize=(10, 10))
     for images, labels in dataset.take(1):
         for i in range(9):
-            ax = plt.subplot(3, 3, i + 1)
+            plt.subplot(3, 3, i + 1)
             plt.imshow(images[i].numpy().astype("uint8"))
             plt.title(dataset.class_names[labels[i]])
             plt.axis("off")
     plt.show()
 
 show_images(load_data_to_tensor()[0])
+
+
+
 
 testing,training=load_data_to_tensor()
 training_cache=get_ds(training)
