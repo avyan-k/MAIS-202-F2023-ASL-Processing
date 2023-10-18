@@ -1,11 +1,10 @@
 import cv2
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras import datasets, layers, models
-from tensorflow.keras.preprocessing import image_dataset_from_directory
+from keras import datasets, layers, models
+from keras.preprocessing import image_dataset_from_directory
 import matplotlib.pyplot as plt
 import opendatasets as od
-
 
 def processImage(path : str)->list[list[int]]:
     '''
