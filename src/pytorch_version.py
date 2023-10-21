@@ -22,4 +22,3 @@ def load_data():
     
     return train_dataset,test_dataset, train_dataloader, test_dataloader
 
-
