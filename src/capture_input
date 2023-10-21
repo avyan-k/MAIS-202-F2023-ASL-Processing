@@ -44,7 +44,7 @@ def capture_images():
             continue
 
         # Save the image with a unique filename
-        image_filename = os.path.join(save_dir, f"image_{i}.jpg")
+        image_filename = os.path.join(save_dir, f"image_{i}.png")
         cv2.imwrite(image_filename, frame)
 
         print(f"Image {i+1} captured and saved as {image_filename}")

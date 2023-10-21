@@ -24,7 +24,6 @@ def load_data_to_tensor() -> (tf.data.Dataset,tf.data.Dataset):
     return test_ds,train_ds
 
 cache = dict()
-
 def get_ds(ds):
     print("Getting dataset")
     if ds not in cache:
