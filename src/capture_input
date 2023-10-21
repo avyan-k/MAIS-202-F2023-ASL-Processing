@@ -1,0 +1,41 @@
+import cv2
+import os
+
+def capture_images(frame_num):
+    
+    # Create a directory to save the captured images
+    if not os.path.exists("captured_images"):
+        os.makedirs("captured_images")
+
+    # Initialize the webcam
+    cap = cv2.VideoCapture(0)
+
+    # Set the resolution to 512x512
+    cap.set(3, 512)  # Width
+    cap.set(4, 512)  # Height
+
+    # Capture frame_num of images
+    for i in range(frame_num):
+        ret, frame = cap.read()
+        print(cap.isOpened(),ret)
+        if not ret:
+            print("Failed to capture an image.")
+            continue
+
+        # Save the image with a unique filename
+        image_filename = f"captured_images/image_{i}.jpg"
+        cv2.imwrite(image_filename, frame)
+
+        print(f"Image {i} captured and saved as {image_filename}")
+
+        # Wait for 1 second
+        cv2.waitKey(1000)
+
+    # Release the webcam and close OpenCV
+    cap.release()
+    cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+    # print(cv2.getBuildInformation())
+    frame_num=int(input("Insert how many letter you wanna translate: "))
+    capture_images(frame_num)
