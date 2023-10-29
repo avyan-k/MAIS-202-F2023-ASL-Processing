@@ -29,4 +29,7 @@ def load_data():
     return train_dataset,test_dataset, train_dataloader, test_dataloader
 
 if __name__ == "__main__":
+    download_data()
     train_dataset, test_dataset, train_dataloader, test_dataloader = load_data()
+    # test dataset 2700 
+    # train dataset 24300
