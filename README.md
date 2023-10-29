@@ -12,6 +12,7 @@ Basic Sign Language Translator that interprets ASL language using Machine Learni
  Use Python Version 3  and install the following packages (tentative list):
 * [PyTorch](https://pytorch.org/) and utilities, including torchvision
 * [opendatasets](https://pypi.org/project/opendatasets)
+* [OpenSSL] version 1.1.1 or higher or [urllib3] to 1.26.7 version pip install urllib3==1.26.7
 
 # Usage
 Run [pytorch_version.py](https://github.com/avyan-k/MAIS-202-F2023-ASL-Processing/blob/main/src/pytorch_version.py) to load the data. Training the model will be implemented at a later time.
