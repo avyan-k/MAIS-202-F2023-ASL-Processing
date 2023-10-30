@@ -13,7 +13,7 @@ def download_data():
         od.download("https://www.kaggle.com/datasets/lexset/synthetic-asl-alphabet/data")
         
 def load_data():
-    
+    download_data()
     # Define the data paths
     test_data_path = PATH_TO_DATA + r"/Test_Alphabet"
     train_data_path = PATH_TO_DATA + r"/Train_Alphabet"
@@ -48,6 +48,15 @@ def load_data():
     print(f"Testing set size: {len(test_dataset)}")
     
     return train_loader, valid_loader, test_loader
+
+def load_device():
+    if torch.backends.mps.is_built():
+        device = torch.device("mps")
+    elif torch.cuda.is_available():# If a GPU is available, use it
+        device = torch.device("cuda")
+    else: # Else, revert to the default (CPU)
+        device = torch.device("cpu")
+        return device
 
 if __name__ == "__main__":
     download_data()

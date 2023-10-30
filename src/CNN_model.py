@@ -11,9 +11,8 @@ from tqdm import tqdm
 import torchmetrics
 import loading_dataset as ld
 
-ld.download_data()
 train_loader, valid_loader, test_loader = ld.load_data()
-
+DEVICE = ld.load_device()
 # Define the model
 
 class CNN_model(nn.Module):
@@ -52,42 +51,30 @@ class CNN_model(nn.Module):
 
     return x
   
-# Define Hyperparameters
-  
-lr_values = {0.01, 0.001}
-num_epochs = 2 # We will go through the whole training dataset 2 times during training to be fair in the comparison to MLP
-num_iterations_before_validation = 1000 # We will compute the validation accuracy every 1000 iterations
 
-if torch.backends.mps.is_built():
-  DEVICE = torch.device("mps")
-elif torch.cuda.is_available():# If a GPU is available, use it
-  DEVICE = torch.device("cuda")
-else: # Else, revert to the default (CPU)
-  DEVICE = torch.device("cpu")
-print(DEVICE)
+def train_model(train_loader, valid_loader, test_loader, lr_values, num_epochs = 2,num_iterations_before_validation = 1000):
+  #hyperparameters
+  lr_values = {0.01, 0.001}
+  cnn_metrics = {}
+  cnn_models = {}
 
-# Define loss and accuracy functions
+  for lr in lr_values:
 
-loss = nn.CrossEntropyLoss().to(DEVICE) # Since we are doing multiclass classification
-accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=10).to(DEVICE) # Regular accuracy
+    cnn_metrics[lr] = {
+        "accuracies": [],
+        "losses": []
+    }
 
-# Define training loop
+  #loss for multiclass
+  loss = nn.CrossEntropyLoss().to(DEVICE)
+  #test accuracy, for testing
+  accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=10).to(DEVICE) # Regular accuracy
 
-cnn_metrics = {}
-cnn_models = {}
-
-for lr in lr_values:
-
-  cnn_metrics[lr] = {
-      "accuracies": [],
-      "losses": []
-  }
 
   cnn = CNN_model().to(DEVICE)
   optimizer = optim.Adam(cnn.parameters(), lr)
   cnn_models[lr] = cnn
-
-  # Iterate through the epochs
+  
   for epoch in range(num_epochs):
 
     # Iterate through the training data
@@ -144,13 +131,15 @@ for lr in lr_values:
           # Print to console
           print(f"LR = {lr} --- EPOCH = {epoch} --- ITERATION = {iteration}")
           print(f"Validation loss = {val_loss} --- Validation accuracy = {val_accuracy}")
+  return cnn_metrics
           
           
-x_axis = np.arange(0, len(cnn_metrics[0.1]["accuracies"]) * num_iterations_before_validation, num_iterations_before_validation)
-# Plot the accuracies as a function of iterations
-plt.plot(x_axis, cnn_metrics[0.01]["accuracies"], label = "Validation accuracies for lr = 0.01")
-plt.plot(x_axis, cnn_metrics[0.001]["accuracies"], label = "Validation accuracies for lr = 0.001")
-plt.xlabel("Iteration")
-plt.ylabel("Validation accuracy")
-plt.title("Validation accuracy as a function of iteration for CNN")
-plt.legend()
+def plot_parameter_testing(cnn_metrics,num_iterations_before_validation):
+  x_axis = np.arange(0, len(cnn_metrics[0.1]["accuracies"]) * num_iterations_before_validation, num_iterations_before_validation)
+  # Plot the accuracies as a function of iterations
+  plt.plot(x_axis, cnn_metrics[0.01]["accuracies"], label = "Validation accuracies for lr = 0.01")
+  plt.plot(x_axis, cnn_metrics[0.001]["accuracies"], label = "Validation accuracies for lr = 0.001")
+  plt.xlabel("Iteration")
+  plt.ylabel("Validation accuracy")
+  plt.title("Validation accuracy as a function of iteration for CNN")
+  plt.legend()
