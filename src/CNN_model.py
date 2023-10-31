@@ -21,7 +21,10 @@ class CNN_model(nn.Module):
   '''
   def __init__(self):
     super(CNN_model, self).__init__()
-    self.conv1 = nn.Conv2d(in_channels=1, out_channels=5, kernel_size=3, padding="same") # Outputs 5 channels
+    self.conv1 = nn.Conv2d(in_channels=3, out_channels=5, kernel_size=3, padding="same") # Outputs 5 channels
+    # In the original lecture 5 code we have:
+    # self.conv1 = nn.Conv2d(in_channels=1, out_channels=5, kernel_size=3, padding="same") it gave this error
+    # RuntimeError: Given groups=1, weight of size [5, 1, 3, 3], expected input[32, 3, 512, 513] to have 1 channels, but got 3 channels instead
     self.conv2 = nn.Conv2d(in_channels=5, out_channels=10, kernel_size=3, padding="same") # Outputs 10 channels
     self.conv3 = nn.Conv2d(in_channels=10, out_channels=20, kernel_size=3, padding="same") # Outputs 20 channels
     self.linear = nn.Linear(180, 10) 
@@ -47,12 +50,13 @@ class CNN_model(nn.Module):
 
     x = torch.flatten(x, start_dim = 1) # Flatten to a 1D vector
     x = self.linear(x)
+    # RuntimeError: mat1 and mat2 shapes cannot be multiplied (32x81920 and 180x10)??? Now what ?
     x = F.softmax(x, dim = 1) # dim = 1 to softmax along the rows of the output (We want the probabilities of all classes to sum up to 1)
 
     return x
   
 
-def train_model(train_loader, valid_loader, test_loader, lr_values, num_epochs = 2,num_iterations_before_validation = 1000):
+def train_model(train_loader, valid_loader, test_loader, lr_values = {0.01, 0.001} , num_epochs = 2,num_iterations_before_validation = 1000):
   #hyperparameters
   lr_values = {0.01, 0.001}
   cnn_metrics = {}
@@ -131,6 +135,7 @@ def train_model(train_loader, valid_loader, test_loader, lr_values, num_epochs =
           # Print to console
           print(f"LR = {lr} --- EPOCH = {epoch} --- ITERATION = {iteration}")
           print(f"Validation loss = {val_loss} --- Validation accuracy = {val_accuracy}")
+          
   return cnn_metrics
           
           
@@ -143,3 +148,7 @@ def plot_parameter_testing(cnn_metrics,num_iterations_before_validation):
   plt.ylabel("Validation accuracy")
   plt.title("Validation accuracy as a function of iteration for CNN")
   plt.legend()
+  
+  
+if __name__ == "__main__":
+  train_model(train_loader, valid_loader, test_loader)
