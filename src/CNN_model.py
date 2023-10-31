@@ -47,6 +47,7 @@ class CNN_model(nn.Module):
 
     x = torch.flatten(x, start_dim = 1) # Flatten to a 1D vector
     x = self.linear(x)
+    # RuntimeError: mat1 and mat2 shapes cannot be multiplied (32x81920 and 180x10)??? Now what ?
     x = F.softmax(x, dim = 1) # dim = 1 to softmax along the rows of the output (We want the probabilities of all classes to sum up to 1)
 
     return x
@@ -130,6 +131,7 @@ def train_model(train_loader, valid_loader, test_loader, lr_values = {0.01, 0.00
           # Print to console
           print(f"LR = {lr} --- EPOCH = {epoch} --- ITERATION = {iteration}")
           print(f"Validation loss = {val_loss} --- Validation accuracy = {val_accuracy}")
+          
   return cnn_metrics
           
           
