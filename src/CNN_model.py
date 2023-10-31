@@ -24,7 +24,7 @@ class CNN_model(nn.Module):
     self.conv1 = nn.Conv2d(in_channels=3, out_channels=5, kernel_size=3, padding="same") # Outputs 5 channels, changed to input 3
     self.conv2 = nn.Conv2d(in_channels=5, out_channels=10, kernel_size=3, padding="same") # Outputs 10 channels
     self.conv3 = nn.Conv2d(in_channels=10, out_channels=20, kernel_size=3, padding="same") # Outputs 20 channels
-    self.linear = nn.Linear(81920, 10) #following procedure below by looking at error "mat1 and mat2 shapes cannot be multiplied (32x81920 and 180x10)"
+    self.linear = nn.Linear(81920, 10) # following procedure below by looking at error "mat1 and mat2 shapes cannot be multiplied (32x81920 and 180x10)"
     # How did we know that the flattened output will have 490 after 2 convolution layers and 2 maxpool layers? Trial and error! Try running a forward pass with a different number (Not 180)
     # Say you first try 3920: Get an error -> mat1 and mat2 shapes cannot be multiplied (8x180 and 3920x10) -> Now we know each of the 8 samples in the batch has size 180 after flattening
     # We can then change 3920 to 180 :)
