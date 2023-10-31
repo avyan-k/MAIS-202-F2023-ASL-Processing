@@ -21,10 +21,10 @@ class CNN_model(nn.Module):
   '''
   def __init__(self):
     super(CNN_model, self).__init__()
-    self.conv1 = nn.Conv2d(in_channels=1, out_channels=5, kernel_size=3, padding="same") # Outputs 5 channels
+    self.conv1 = nn.Conv2d(in_channels=3, out_channels=5, kernel_size=3, padding="same") # Outputs 5 channels, changed to input 3
     self.conv2 = nn.Conv2d(in_channels=5, out_channels=10, kernel_size=3, padding="same") # Outputs 10 channels
     self.conv3 = nn.Conv2d(in_channels=10, out_channels=20, kernel_size=3, padding="same") # Outputs 20 channels
-    self.linear = nn.Linear(180, 10) 
+    self.linear = nn.Linear(81920, 10) #following procedure below by looking at error "mat1 and mat2 shapes cannot be multiplied (32x81920 and 180x10)"
     # How did we know that the flattened output will have 490 after 2 convolution layers and 2 maxpool layers? Trial and error! Try running a forward pass with a different number (Not 180)
     # Say you first try 3920: Get an error -> mat1 and mat2 shapes cannot be multiplied (8x180 and 3920x10) -> Now we know each of the 8 samples in the batch has size 180 after flattening
     # We can then change 3920 to 180 :)
@@ -52,9 +52,8 @@ class CNN_model(nn.Module):
     return x
   
 
-def train_model(train_loader, valid_loader, test_loader, lr_values, num_epochs = 2,num_iterations_before_validation = 1000):
+def train_model(train_loader, valid_loader, test_loader, lr_values = {0.01, 0.001}, num_epochs = 2,num_iterations_before_validation = 1000):
   #hyperparameters
-  lr_values = {0.01, 0.001}
   cnn_metrics = {}
   cnn_models = {}
 
@@ -91,7 +90,7 @@ def train_model(train_loader, valid_loader, test_loader, lr_values, num_epochs =
       y_hat = cnn(X_train)
 
       # Compute the loss
-      train_loss = loss(y_hat, y_train)
+      train_loss = loss(y_hat, y_train) #y_train needs to be targets
 
       # Compute the gradients in the optimizer
       train_loss.backward()
@@ -143,3 +142,7 @@ def plot_parameter_testing(cnn_metrics,num_iterations_before_validation):
   plt.ylabel("Validation accuracy")
   plt.title("Validation accuracy as a function of iteration for CNN")
   plt.legend()
+
+#testing the model
+cnn_metrics = train_model(train_loader, valid_loader, test_loader)
+plot_parameter_testing(cnn_metrics, 1000)
