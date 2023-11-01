@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>MAIS-202-F2023-ASL-PROCESSING</title>
+        <script>
+            function getData(){
+                console.log("hi!") 
+                fetch("http://127.0.0.1:5000/data")
+                .then(function (response){
+                    return response.json()
+                })
+                .then(function (data){
+                    console.log(data)
+                })
+            }
+        </script>
+        
+    </head>
+    <body>
+        <style>
+            .headerDiv{
+                height: 250px;
+                background-color: #4F7B4A;
+                padding: 50px 70px;
+            }
+            h1 {
+                font-size: 30px;
+                font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+                color: white;
+                text-align: right;
+            }
+        </style>
+
+        <div class="headerDiv">
+            <img src="images/logo.png" alt="logo" width="220" height="200" class="logo" align="left">
+            <h1>American Sign Language Translator</h1>
+        </div>
+        whats up
+        <br/>
+        <button onclick="getData();"> Click me! </button>
+        <video id="webcam" autoplay></video>
+        <script>
+            // Access the webcam and display the video stream
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(stream) {
+                    document.getElementById('webcam').srcObject = stream;
+                })
+                .catch(function(error) {
+                    console.error('Error accessing the webcam:', error);
+                });
+        </script>
+    </body>
+</html>
