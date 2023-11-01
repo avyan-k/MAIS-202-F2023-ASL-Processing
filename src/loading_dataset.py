@@ -39,9 +39,9 @@ def load_data():
 
     
     # Set Batch Size and shuffles the data
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=32, shuffle=True)
-    valid_loader = torch.utils.data.DataLoader(valid_dataset, batch_size=32, shuffle=False)
-    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=32, shuffle=False)
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=100, shuffle=True)
+    valid_loader = torch.utils.data.DataLoader(valid_dataset, batch_size=100, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=100, shuffle=False)
     
     print(f"Training set size: {len(train_dataset)}")
     print(f"Validation set size: {len(valid_dataset)}")
