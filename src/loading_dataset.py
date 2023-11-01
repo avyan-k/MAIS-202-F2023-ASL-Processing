@@ -9,57 +9,13 @@ import numpy as np
 PATH_TO_DATA = r"synthetic-asl-alphabet"
 test_data_path = PATH_TO_DATA + r"/Test_Alphabet"
 train_data_path = PATH_TO_DATA + r"/Train_Alphabet"
-TRAIN_SET_SIZE=24300
-TESTING_SET_SIZE=2700
+TRAIN_SET_SIZE = 24300
+TESTING_SET_SIZE = 2700
 
 def download_data():
     
     if not os.path.exists(r"synthetic-asl-alphabet"):
         od.download("https://www.kaggle.com/datasets/lexset/synthetic-asl-alphabet/data")
-        
-def get_and_split_dataset():
-    
-    # Loading The Dataset
-    full_train_dataset = datasets.ImageFolder(train_data_path,transforms.ToTensor())
-    test_dataset = datasets.ImageFolder(test_data_path,transforms.ToTensor())
-    
-    # Split the datasets into training, validation, and test sets
-    train_dataset, valid_dataset, _ = random_split(full_train_dataset, [int(TRAIN_SET_SIZE*0.75), int(TRAIN_SET_SIZE*0.25),0])
-    test_dataset, _ , _ = random_split(test_dataset, [TESTING_SET_SIZE, len(test_dataset) - TESTING_SET_SIZE, 0])
-    
-    return train_dataset,valid_dataset,test_dataset
-
-def tune_mean_std(train_dataset,valid_dataset,test_dataset):
-
-    # Create a DataLoader for the subset
-    train_loader = DataLoader(train_dataset, batch_size=100, shuffle=True)
-    valid_loader = DataLoader(valid_dataset, batch_size=100, shuffle=False)
-    test_loader = DataLoader(test_dataset, batch_size=100, shuffle=False)
-
-    # Calculate mean and standard deviation
-    means_stds = []
-    loaders = [train_loader,valid_loader,test_loader]
-    
-    for curr_loader in loaders:
-        
-        mean = torch.zeros(3)
-        std = torch.zeros(3)
-        
-        for data, _ in curr_loader: 
-            
-            data = data.view(data.size(0), data.size(1), -1)  # Flatten the images
-            mean += data.mean(2).sum(0)
-            std += data.std(2).sum(0)
-            
-        mean /= len(curr_loader.dataset)
-        std /= len(curr_loader.dataset)
-        
-        print("Mean:", mean)
-        print("Standard Deviation:", std)
-        
-        means_stds.append([mean,std])
-
-    return means_stds
         
 def load_data():
 
@@ -78,13 +34,13 @@ def load_data():
     test_dataset = datasets.ImageFolder(test_data_path, transform=transforms.Compose(processing_transforms))
     
     # Split the datasets into training, validation, and test sets
-    train_dataset, valid_dataset, _ = torch.utils.data.random_split(full_train_dataset, [int(TRAIN_SET_SIZE*0.75), int(TRAIN_SET_SIZE*0.25),0])
-    test_dataset, _, _ = torch.utils.data.random_split(test_dataset, [TESTING_SET_SIZE, len(test_dataset) - TESTING_SET_SIZE, 0])
+    train_dataset, valid_dataset, _ = random_split(full_train_dataset, [int(TRAIN_SET_SIZE*0.75), int(TRAIN_SET_SIZE*0.25),0])
+    test_dataset, _, _ = random_split(test_dataset, [TESTING_SET_SIZE, len(test_dataset) - TESTING_SET_SIZE, 0])
     
     # Set Batch Size and shuffles the data
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=100, shuffle=True)
-    valid_loader = torch.utils.data.DataLoader(valid_dataset, batch_size=100, shuffle=False)
-    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=100, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=100, shuffle=True)
+    valid_loader = DataLoader(valid_dataset, batch_size=100, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=100, shuffle=False)
     
     print(f"Training set size: {len(train_dataset)}")
     print(f"Validation set size: {len(valid_dataset)}")
@@ -94,12 +50,16 @@ def load_data():
 
 def load_device():
     
+    # if a macOs then use mps
     if torch.backends.mps.is_built():
         device = torch.device("mps")
-    elif torch.cuda.is_available(): # If a GPU is available, use it
+    # elif a GPU is available, use it
+    elif torch.cuda.is_available(): 
         device = torch.device("cuda")
-    else: # Else, revert to the default (CPU)
+    # Else, revert to the default (CPU)
+    else: 
         device = torch.device("cpu")
+        
     return device
 
 if __name__ == "__main__":

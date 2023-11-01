@@ -17,25 +17,26 @@ Basic Sign Language Translator that interprets ASL language using Machine Learni
 # Usage
 Run [pytorch_version.py](https://github.com/avyan-k/MAIS-202-F2023-ASL-Processing/blob/main/src/pytorch_version.py) to load the data. Training the model will be implemented at a later time.
 
-# Split Dataset
-With get_and_split_dataset() we split the dataset into training set (67.5%) validation set (22.5%) and testing set (10%)
+## Split Dataset
+With get_and_split_dataset() in hyperpara_tuning.py we split the dataset into training set (67.5%) validation set (22.5%) and testing set (10%)
 
-# Tuning Weight Regularization
-With tune_mean_std() we get the average weight for the mean and standard deviation for the each datasets and we get:
+## Tuning Weight Regularization
+With tune_mean_std() in hyperpara_tuning.py we get the average weight for the mean and standard deviation for the each datasets. 
 
-- training dataset:
-    - mean:[0.4916, 0.4699, 0.4255]
-    - standard deviation:[0.1582, 0.1646, 0.1767]
-
-- validation dataset:
-    - mean:[0.4921, 0.4698, 0.4243]
-    - standard deviation: [0.1588, 0.1651, 0.1769]
-
-- testing dataset:
-    - mean:[0.4904, 0.4686, 0.4246]
-    - standard deviation:[0.1587, 0.1656, 0.1776]
-
-We can approximate the best weight by getting the average of weights of all datasets and we get:
+After approximating the best weight from it we get:
 
 - mean: [0.4916,0.4697,0.4251]
 - standard deviation: [0.1584,0.1648,0.1768]
+
+# Hyperparameters Summary
+| Hyperparameters         | Explanation                                              | Computed Result                                     |
+|-------------------------|----------------------------------------------------------|-----------------------------------------------------|
+| Learning Rate           | Pace the model learns the values of a parameter estimate | {0.01,0.001}                                        |
+| Weight Regularization   | Mean and standard deviation for normalizing the dataset  | [[ 0.4916,0.4697,0.4251 ],[ 0.1584,0.1648,0.1768 ]] |
+| Convolutional Layers    | Number of convolutional layers in network                |                                                     |
+| Initial Output Channels | Number of kernel in the initial convolutional layer      |                                                     |
+| Dense Layers            | Number of linear layers after convolution                |                                                     |
+| Neurons per Layers      | Number of neurons per dense layers                       |                                                     |
+| Dropout                 | Number of neurons we leave out per dense layers          |                                                     |
+
+

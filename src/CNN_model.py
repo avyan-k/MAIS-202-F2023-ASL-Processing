@@ -14,28 +14,27 @@ import time
 
 train_loader, valid_loader, test_loader = ld.load_data()
 DEVICE = ld.load_device()
-# Define the model
 
 class CNN_model(nn.Module):
   '''
     Class representing a CNN with 2 (convolutional + activation + maxpooling) layers, connected to a single linear layer for prediction
   '''
   def __init__(self,numberConv=3,initialKernels=5,numberDense = 0,neuronsDLayer=0,dropout=0.5):
+    
     super(CNN_model, self).__init__()
+    
     self.convolutional_network = nn.ModuleList()
     kernelsPerLayers = initialKernels
     self.convolutional_network.append(nn.Conv2d(in_channels=3,out_channels=kernelsPerLayers, kernel_size=5,padding="same"))
+    
     for index in range(numberConv-1):
+      
       self.convolutional_network.append(nn.Conv2d(in_channels=kernelsPerLayers,out_channels=kernelsPerLayers*2, kernel_size=5,padding="same"))
       kernelsPerLayers *= 2
+      
     self.flatten = int((512 / (2**numberConv))**2 * initialKernels * 2 **(numberConv-1))
-    # self.conv1 = nn.Conv2d(in_channels=1, out_channels=5, kernel_size=3, padding="same") # Outputs 5 channels
-    # self.conv2 = nn.Conv2d(in_channels=5, out_channels=10, kernel_size=3, padding="same") # Outputs 10 channels
-    # self.conv3 = nn.Conv2d(in_channels=10, out_channels=20, kernel_size=3, padding="same") # Outputs 20 channels
+
     self.linear = nn.Linear(self.flatten, 27) 
-    # How did we know that the flattened output will have 490 after 2 convolution layers and 2 maxpool layers? Trial and error! Try running a forward pass with a different number (Not 180)
-    # Say you first try 3920: Get an error -> mat1 and mat2 shapes cannot be multiplied (8x180 and 3920x10) -> Now we know each of the 8 samples in the batch has size 180 after flattening
-    # We can then change 3920 to 180 :)
 
   def forward(self, x):
     
@@ -46,7 +45,6 @@ class CNN_model(nn.Module):
       x = F.max_pool2d(x, 2)
      # 2x2 maxpool
 
-
     x = torch.flatten(x, start_dim = 1) # Flatten to a 1D vector
     x = self.linear(x)
     x = F.softmax(x, dim = 1) # dim = 1 to softmax along the rows of the output (We want the probabilities of all classes to sum up to 1)
@@ -55,8 +53,9 @@ class CNN_model(nn.Module):
   
 
 def train_model(train_loader, valid_loader, test_loader, num_epochs = 2,num_iterations_before_validation = 1000):
+  
   start = time.time()
-  #hyperparameters
+  # hyperparameters
   lr_values = {0.01, 0.001}
   cnn_metrics = {}
   cnn_models = {}
@@ -101,7 +100,6 @@ def train_model(train_loader, valid_loader, test_loader, num_epochs = 2,num_iter
         # Update the weights
         optimizer.step()
 
-        # Check if should compute the validation metrics for plotting later
         # Check if should compute the validation metrics for plotting later
         if iteration % num_iterations_before_validation == 0:
 
