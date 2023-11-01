@@ -35,8 +35,6 @@ def load_data():
     # Split the datasets into training, validation, and test sets
     train_dataset, valid_dataset, _ = torch.utils.data.random_split(full_train_dataset, [int(TRAIN_SET_SIZE*0.75), int(TRAIN_SET_SIZE*0.25),0])
     test_dataset, _, _ = torch.utils.data.random_split(test_dataset, [TESTING_SET_SIZE, len(test_dataset) - TESTING_SET_SIZE, 0])
-    # test_set = torchvision.datasets.MNIST('mnist', train=False, download=True, transform=transform)
-
     
     # Set Batch Size and shuffles the data
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=100, shuffle=True)
