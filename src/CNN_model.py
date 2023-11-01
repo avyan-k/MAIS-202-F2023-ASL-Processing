@@ -129,7 +129,7 @@ def train_model(train_loader, valid_loader, test_loader, lr_values = {0.01, 0.00
           print(f"LR = {lr} --- EPOCH = {epoch} --- ITERATION = {iteration}")
           print(f"Validation loss = {val_loss} --- Validation accuracy = {val_accuracy}")
           
-  return cnn_metrics
+  return cnn_metrics, cnn
           
           
 def plot_parameter_testing(cnn_metrics,num_iterations_before_validation):
@@ -146,5 +146,7 @@ def plot_parameter_testing(cnn_metrics,num_iterations_before_validation):
 
 # testing the model
 if __name__ == "__main__":
-  cnn_metrics = train_model(train_loader, valid_loader, test_loader)
+  cnn_metrics, cnn = train_model(train_loader, valid_loader, test_loader)
   plot_parameter_testing(cnn_metrics, 1000)
+  MODEL_PATH = r"cnn_model"
+  torch.save(cnn.state_dict(), MODEL_PATH)
