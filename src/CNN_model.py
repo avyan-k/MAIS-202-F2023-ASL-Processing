@@ -13,33 +13,38 @@ import loading_dataset as ld
 
 train_loader, valid_loader, test_loader = ld.load_data()
 DEVICE = ld.load_device()
+# Define the model
 
 class CNN_model(nn.Module):
   '''
     Class representing a CNN with 2 (convolutional + activation + maxpooling) layers, connected to a single linear layer for prediction
   '''
-  def __init__(self,numberConv,totalMaxPooling,kernelsCLayer,flattened,numberDense,neuronsDLayer,dropout):
+  def __init__(self,numberConv=3,initialKernels=5,numberDense = 0,neuronsDLayer=0,dropout=0.5):
     super(CNN_model, self).__init__()
-    self.conv1 = nn.Conv2d(in_channels=1, out_channels=5, kernel_size=5, padding="same") 
-    self.conv2 = nn.Conv2d(in_channels=5, out_channels=10, kernel_size=5, padding="same") 
-    self.conv3 = nn.Conv2d(in_channels=10, out_channels=20, kernel_size=5, padding="same") 
-    self.linear = nn.Linear(81920, 27) 
+    self.convolutional_network = nn.ModuleList()
+    kernelsPerLayers = initialKernels
+    self.convolutional_network.append(nn.Conv2d(in_channels=3,out_channels=kernelsPerLayers, kernel_size=5,padding="same"))
+    for index in range(numberConv-1):
+      self.convolutional_network.append(nn.Conv2d(in_channels=kernelsPerLayers,out_channels=kernelsPerLayers*2, kernel_size=5,padding="same"))
+      kernelsPerLayers *= 2
+    self.flatten = int((512 / (2**numberConv))**2 * initialKernels * 2 **(numberConv-1))
+    # self.conv1 = nn.Conv2d(in_channels=1, out_channels=5, kernel_size=3, padding="same") # Outputs 5 channels
+    # self.conv2 = nn.Conv2d(in_channels=5, out_channels=10, kernel_size=3, padding="same") # Outputs 10 channels
+    # self.conv3 = nn.Conv2d(in_channels=10, out_channels=20, kernel_size=3, padding="same") # Outputs 20 channels
+    self.linear = nn.Linear(self.flatten, 27) 
+    # How did we know that the flattened output will have 490 after 2 convolution layers and 2 maxpool layers? Trial and error! Try running a forward pass with a different number (Not 180)
+    # Say you first try 3920: Get an error -> mat1 and mat2 shapes cannot be multiplied (8x180 and 3920x10) -> Now we know each of the 8 samples in the batch has size 180 after flattening
+    # We can then change 3920 to 180 :)
 
   def forward(self, x):
     
     '''Forward pass function, needs to be defined for every model'''
+    for convLayer in self.convolutional_network:
+      x = convLayer(x)
+      x = F.relu(x)
+      x = F.max_pool2d(x, 2)
+     # 2x2 maxpool
 
-    x = self.conv1(x)
-    x = F.relu(x)
-    x = F.max_pool2d(x, 2) # 2x2 maxpool
-
-    x = self.conv2(x)
-    x = F.relu(x)
-    x = F.max_pool2d(x, 2)
-
-    x = self.conv3(x)
-    x = F.relu(x)
-    x = F.max_pool2d(x, 2)
 
     x = torch.flatten(x, start_dim = 1) # Flatten to a 1D vector
     x = self.linear(x)
@@ -48,8 +53,8 @@ class CNN_model(nn.Module):
     return x
   
 
-def train_model(train_loader, valid_loader, test_loader, lr_values, num_epochs = 2,num_iterations_before_validation = 1000):
-  # hyperparameters
+def train_model(train_loader, valid_loader, test_loader, num_epochs = 2,num_iterations_before_validation = 1000):
+  #hyperparameters
   lr_values = {0.01, 0.001}
   cnn_metrics = {}
   cnn_models = {}
@@ -139,3 +144,10 @@ def plot_parameter_testing(cnn_metrics,num_iterations_before_validation):
   plt.ylabel("Validation accuracy")
   plt.title("Validation accuracy as a function of iteration for CNN")
   plt.legend()
+
+if __name__ == "__main__":
+  cnn_metrics = train_model(train_loader, valid_loader, test_loader)
+  cnn_metrics, cnn = train_model(train_loader, valid_loader, test_loader)
+  plot_parameter_testing(cnn_metrics, 1000)
+  MODEL_PATH = r"cnn_model"
+  torch.save(cnn.state_dict(), MODEL_PATH)
