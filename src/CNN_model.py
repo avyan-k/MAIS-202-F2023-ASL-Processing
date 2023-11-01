@@ -10,6 +10,7 @@ import torch.optim as optim
 from tqdm import tqdm
 import torchmetrics
 import loading_dataset as ld
+import time
 
 train_loader, valid_loader, test_loader = ld.load_data()
 DEVICE = ld.load_device()
@@ -54,6 +55,7 @@ class CNN_model(nn.Module):
   
 
 def train_model(train_loader, valid_loader, test_loader, num_epochs = 2,num_iterations_before_validation = 1000):
+  start = time.time()
   #hyperparameters
   lr_values = {0.01, 0.001}
   cnn_metrics = {}
@@ -66,72 +68,74 @@ def train_model(train_loader, valid_loader, test_loader, num_epochs = 2,num_iter
         "losses": []
     }
 
-  #loss for multiclass
-  loss = nn.CrossEntropyLoss().to(DEVICE)
-  #test accuracy, for testing
-  accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=27).to(DEVICE) # Regular accuracy
+    #loss for multiclass
+    loss = nn.CrossEntropyLoss().to(DEVICE)
+    #test accuracy, for testing
+    accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=27).to(DEVICE) # Regular accuracy
 
 
-  cnn = CNN_model().to(DEVICE)
-  optimizer = optim.Adam(cnn.parameters(), lr)
-  cnn_models[lr] = cnn
-  
-  for epoch in range(num_epochs):
+    cnn = CNN_model().to(DEVICE)
+    optimizer = optim.Adam(cnn.parameters(), lr)
+    cnn_models[lr] = cnn
+    
+    for epoch in range(num_epochs):
 
-    # Iterate through the training data
-    for iteration, (X_train, y_train) in enumerate(train_loader):
+      # Iterate through the training data
+      for iteration, (X_train, y_train) in enumerate(train_loader):
+        # Move the batch to GPU if it's available
+        X_train = X_train.to(DEVICE)
+        y_train = y_train.to(DEVICE)
 
-      # Move the batch to GPU if it's available
-      X_train = X_train.to(DEVICE)
-      y_train = y_train.to(DEVICE)
+        # The optimizer accumulates the gradient of each weight as we do forward passes -> zero_grad resets all gradients to 0
+        optimizer.zero_grad()
 
-      # The optimizer accumulates the gradient of each weight as we do forward passes -> zero_grad resets all gradients to 0
-      optimizer.zero_grad()
+        # Compute a forward pass and make a prediction
+        y_hat = cnn(X_train)
 
-      # Compute a forward pass and make a prediction
-      y_hat = cnn(X_train)
+        # Compute the loss
+        train_loss = loss(y_hat, y_train)
 
-      # Compute the loss
-      train_loss = loss(y_hat, y_train)
+        # Compute the gradients in the optimizer
+        train_loss.backward()
 
-      # Compute the gradients in the optimizer
-      train_loss.backward()
+        # Update the weights
+        optimizer.step()
 
-      # Update the weights
-      optimizer.step()
+        # Check if should compute the validation metrics for plotting later
+        # Check if should compute the validation metrics for plotting later
+        if iteration % num_iterations_before_validation == 0:
 
-      # Check if should compute the validation metrics for plotting later
-      if iteration % num_iterations_before_validation == 0:
+          # Don't compute gradients on the validation set
+          with torch.no_grad():
 
-        # Don't compute gradients on the validation set
-        with torch.no_grad():
+            # Keep track of the losses & accuracies
+            val_accuracy_sum = 0
+            val_loss_sum = 0
 
-          # Keep track of the losses & accuracies
-          val_accuracy_sum = 0
-          val_loss_sum = 0
+            # Make a predictions on the full validation set, batch by batch
+            for X_val, y_val in valid_loader:
 
-          # Make a predictions on the full validation set, batch by batch
-          for X_val, y_val in valid_loader:
+              # Move the batch to GPU if it's available
+              X_val = X_val.to(DEVICE)
+              y_val = y_val.to(DEVICE)
 
-            # Move the batch to GPU if it's available
-            X_val = X_val.to(DEVICE)
-            y_val = y_val.to(DEVICE)
+              y_hat = cnn(X_val)
+              val_accuracy_sum += accuracy(y_hat, y_val)
+              val_loss_sum += loss(y_hat, y_val)
 
-            y_hat = cnn(X_val)
-            val_accuracy_sum += accuracy(y_hat, y_val)
-            val_loss_sum += loss(y_hat, y_val)
+            # Divide by the number of iterations (and move back to CPU)
+            val_accuracy = (val_accuracy_sum / len(valid_loader)).cpu()
+            val_loss = (val_loss_sum / len(valid_loader)).cpu()
 
-          # Divide by the number of iterations (and move back to CPU)
-          val_accuracy = (val_accuracy_sum / len(valid_loader)).cpu()
-          val_loss = (val_loss_sum / len(valid_loader)).cpu()
+            # Store the values in the dictionary
+            cnn_metrics[lr]["accuracies"].append(val_accuracy)
+            cnn_metrics[lr]["losses"].append(val_loss)
 
-          # Store the values in the dictionary
-          cnn_metrics[lr]["accuracies"].append(val_accuracy)
-          cnn_metrics[lr]["losses"].append(val_loss)
-
-          # Print to console
-          print(f"LR = {lr} --- EPOCH = {epoch} --- ITERATION = {iteration}")
-          print(f"Validation loss = {val_loss} --- Validation accuracy = {val_accuracy}")
+            # Print to console
+            with open("../learning_rate_training.txt", "w") as text_file:
+              text_file.write(f"LR = {lr} --- EPOCH = {epoch} --- ITERATION = {iteration}")
+              text_file.write(f"Validation loss = {val_loss} --- Validation accuracy = {val_accuracy}")
+              text_file.write("It has now been "+ str(time.time() - start) +" seconds since the beginning of the program")
   return cnn_metrics
           
           
