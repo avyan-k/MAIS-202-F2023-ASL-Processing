@@ -24,9 +24,10 @@ class CNN_model(nn.Module):
     self.conv1 = nn.Conv2d(in_channels=3, out_channels=5, kernel_size=3, padding="same") # Outputs 5 channels, changed to input 3
     self.conv2 = nn.Conv2d(in_channels=5, out_channels=10, kernel_size=3, padding="same") # Outputs 10 channels
     self.conv3 = nn.Conv2d(in_channels=10, out_channels=20, kernel_size=3, padding="same") # Outputs 20 channels
-    self.linear = nn.Linear(81920, 10) # following procedure below by looking at error "mat1 and mat2 shapes cannot be multiplied (32x81920 and 180x10)"
+    self.linear = nn.Linear(81920, 27) 
     # How did we know that the flattened output will have 490 after 2 convolution layers and 2 maxpool layers? Trial and error! Try running a forward pass with a different number (Not 180)
     # Say you first try 3920: Get an error -> mat1 and mat2 shapes cannot be multiplied (8x180 and 3920x10) -> Now we know each of the 8 samples in the batch has size 180 after flattening
+    # mat1 and mat2 shapes cannot be multiplied (32x81920 and 512x27)
     # We can then change 3920 to 180 :)
 
   def forward(self, x):
@@ -68,7 +69,7 @@ def train_model(train_loader, valid_loader, test_loader, lr_values = {0.01, 0.00
   #loss for multiclass
   loss = nn.CrossEntropyLoss().to(DEVICE)
   #test accuracy, for testing
-  accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=10).to(DEVICE) # Regular accuracy
+  accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=27).to(DEVICE) # Regular accuracy
 
 
   cnn = CNN_model().to(DEVICE)
@@ -145,6 +146,7 @@ def plot_parameter_testing(cnn_metrics,num_iterations_before_validation):
   plt.title("Validation accuracy as a function of iteration for CNN")
   plt.legend()
 
+print(ld.load_device())
 #testing the model
-cnn_metrics = train_model(train_loader, valid_loader, test_loader)
-plot_parameter_testing(cnn_metrics, 1000)
+#cnn_metrics = train_model(train_loader, valid_loader, test_loader)
+#plot_parameter_testing(cnn_metrics, 1000)

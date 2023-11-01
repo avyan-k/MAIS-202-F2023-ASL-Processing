@@ -56,7 +56,7 @@ def load_device():
         device = torch.device("cuda")
     else: # Else, revert to the default (CPU)
         device = torch.device("cpu")
-        return device
+    return device
 
 if __name__ == "__main__":
     download_data()
