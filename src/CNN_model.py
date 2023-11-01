@@ -13,7 +13,6 @@ import loading_dataset as ld
 
 train_loader, valid_loader, test_loader = ld.load_data()
 DEVICE = ld.load_device()
-# Define the model
 
 class CNN_model(nn.Module):
   '''
@@ -21,13 +20,10 @@ class CNN_model(nn.Module):
   '''
   def __init__(self,numberConv,totalMaxPooling,kernelsCLayer,flattened,numberDense,neuronsDLayer,dropout):
     super(CNN_model, self).__init__()
-    self.conv1 = nn.Conv2d(in_channels=1, out_channels=5, kernel_size=3, padding="same") # Outputs 5 channels
-    self.conv2 = nn.Conv2d(in_channels=5, out_channels=10, kernel_size=3, padding="same") # Outputs 10 channels
-    self.conv3 = nn.Conv2d(in_channels=10, out_channels=20, kernel_size=3, padding="same") # Outputs 20 channels
-    self.linear = nn.Linear(180, 10) 
-    # How did we know that the flattened output will have 490 after 2 convolution layers and 2 maxpool layers? Trial and error! Try running a forward pass with a different number (Not 180)
-    # Say you first try 3920: Get an error -> mat1 and mat2 shapes cannot be multiplied (8x180 and 3920x10) -> Now we know each of the 8 samples in the batch has size 180 after flattening
-    # We can then change 3920 to 180 :)
+    self.conv1 = nn.Conv2d(in_channels=1, out_channels=5, kernel_size=5, padding="same") 
+    self.conv2 = nn.Conv2d(in_channels=5, out_channels=10, kernel_size=5, padding="same") 
+    self.conv3 = nn.Conv2d(in_channels=10, out_channels=20, kernel_size=5, padding="same") 
+    self.linear = nn.Linear(81920, 27) 
 
   def forward(self, x):
     
@@ -53,7 +49,7 @@ class CNN_model(nn.Module):
   
 
 def train_model(train_loader, valid_loader, test_loader, lr_values, num_epochs = 2,num_iterations_before_validation = 1000):
-  #hyperparameters
+  # hyperparameters
   lr_values = {0.01, 0.001}
   cnn_metrics = {}
   cnn_models = {}
@@ -68,7 +64,7 @@ def train_model(train_loader, valid_loader, test_loader, lr_values, num_epochs =
   #loss for multiclass
   loss = nn.CrossEntropyLoss().to(DEVICE)
   #test accuracy, for testing
-  accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=10).to(DEVICE) # Regular accuracy
+  accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=27).to(DEVICE) # Regular accuracy
 
 
   cnn = CNN_model().to(DEVICE)
