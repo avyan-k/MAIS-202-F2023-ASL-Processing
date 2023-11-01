@@ -25,10 +25,7 @@ class CNN_model(nn.Module):
     self.conv2 = nn.Conv2d(in_channels=5, out_channels=10, kernel_size=3, padding="same") # Outputs 10 channels
     self.conv3 = nn.Conv2d(in_channels=10, out_channels=20, kernel_size=3, padding="same") # Outputs 20 channels
     self.linear = nn.Linear(81920, 27) 
-    # How did we know that the flattened output will have 490 after 2 convolution layers and 2 maxpool layers? Trial and error! Try running a forward pass with a different number (Not 180)
-    # Say you first try 3920: Get an error -> mat1 and mat2 shapes cannot be multiplied (8x180 and 3920x10) -> Now we know each of the 8 samples in the batch has size 180 after flattening
-    # mat1 and mat2 shapes cannot be multiplied (32x81920 and 512x27)
-    # We can then change 3920 to 180 :)
+    # (512/2^3)^2 * 20 = 81920
 
   def forward(self, x):
     
@@ -48,7 +45,6 @@ class CNN_model(nn.Module):
 
     x = torch.flatten(x, start_dim = 1) # Flatten to a 1D vector
     x = self.linear(x)
-    # RuntimeError: mat1 and mat2 shapes cannot be multiplied (32x81920 and 180x10)??? Now what ?
     x = F.softmax(x, dim = 1) # dim = 1 to softmax along the rows of the output (We want the probabilities of all classes to sum up to 1)
 
     return x
@@ -137,7 +133,9 @@ def train_model(train_loader, valid_loader, test_loader, lr_values = {0.01, 0.00
           
           
 def plot_parameter_testing(cnn_metrics,num_iterations_before_validation):
+  
   x_axis = np.arange(0, len(cnn_metrics[0.1]["accuracies"]) * num_iterations_before_validation, num_iterations_before_validation)
+  
   # Plot the accuracies as a function of iterations
   plt.plot(x_axis, cnn_metrics[0.01]["accuracies"], label = "Validation accuracies for lr = 0.01")
   plt.plot(x_axis, cnn_metrics[0.001]["accuracies"], label = "Validation accuracies for lr = 0.001")
@@ -146,7 +144,7 @@ def plot_parameter_testing(cnn_metrics,num_iterations_before_validation):
   plt.title("Validation accuracy as a function of iteration for CNN")
   plt.legend()
 
-print(ld.load_device())
-#testing the model
-#cnn_metrics = train_model(train_loader, valid_loader, test_loader)
-#plot_parameter_testing(cnn_metrics, 1000)
+# testing the model
+if __name__ == "__main__":
+  cnn_metrics = train_model(train_loader, valid_loader, test_loader)
+  plot_parameter_testing(cnn_metrics, 1000)
