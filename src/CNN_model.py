@@ -19,13 +19,15 @@ class CNN_model(nn.Module):
   '''
     Class representing a CNN with 2 (convolutional + activation + maxpooling) layers, connected to a single linear layer for prediction
   '''
-  def __init__(self):
+  def __init__(self,numberConv,totalMaxPooling,kernelsCLayer,flattened,numberDense,neuronsDLayer,dropout):
     super(CNN_model, self).__init__()
-    self.conv1 = nn.Conv2d(in_channels=3, out_channels=5, kernel_size=3, padding="same") # Outputs 5 channels, changed to input 3
+    self.conv1 = nn.Conv2d(in_channels=1, out_channels=5, kernel_size=3, padding="same") # Outputs 5 channels
     self.conv2 = nn.Conv2d(in_channels=5, out_channels=10, kernel_size=3, padding="same") # Outputs 10 channels
     self.conv3 = nn.Conv2d(in_channels=10, out_channels=20, kernel_size=3, padding="same") # Outputs 20 channels
-    self.linear = nn.Linear(81920, 27) 
-    # (512/2^3)^2 * 20 = 81920
+    self.linear = nn.Linear(180, 10) 
+    # How did we know that the flattened output will have 490 after 2 convolution layers and 2 maxpool layers? Trial and error! Try running a forward pass with a different number (Not 180)
+    # Say you first try 3920: Get an error -> mat1 and mat2 shapes cannot be multiplied (8x180 and 3920x10) -> Now we know each of the 8 samples in the batch has size 180 after flattening
+    # We can then change 3920 to 180 :)
 
   def forward(self, x):
     
@@ -50,8 +52,9 @@ class CNN_model(nn.Module):
     return x
   
 
-def train_model(train_loader, valid_loader, test_loader, lr_values = {0.01, 0.001}, num_epochs = 2,num_iterations_before_validation = 1000):
+def train_model(train_loader, valid_loader, test_loader, lr_values, num_epochs = 2,num_iterations_before_validation = 1000):
   #hyperparameters
+  lr_values = {0.01, 0.001}
   cnn_metrics = {}
   cnn_models = {}
 
@@ -65,7 +68,7 @@ def train_model(train_loader, valid_loader, test_loader, lr_values = {0.01, 0.00
   #loss for multiclass
   loss = nn.CrossEntropyLoss().to(DEVICE)
   #test accuracy, for testing
-  accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=27).to(DEVICE) # Regular accuracy
+  accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=10).to(DEVICE) # Regular accuracy
 
 
   cnn = CNN_model().to(DEVICE)
@@ -88,7 +91,7 @@ def train_model(train_loader, valid_loader, test_loader, lr_values = {0.01, 0.00
       y_hat = cnn(X_train)
 
       # Compute the loss
-      train_loss = loss(y_hat, y_train) #y_train needs to be targets
+      train_loss = loss(y_hat, y_train)
 
       # Compute the gradients in the optimizer
       train_loss.backward()
@@ -128,14 +131,11 @@ def train_model(train_loader, valid_loader, test_loader, lr_values = {0.01, 0.00
           # Print to console
           print(f"LR = {lr} --- EPOCH = {epoch} --- ITERATION = {iteration}")
           print(f"Validation loss = {val_loss} --- Validation accuracy = {val_accuracy}")
-          
-  return cnn_metrics, cnn
+  return cnn_metrics
           
           
 def plot_parameter_testing(cnn_metrics,num_iterations_before_validation):
-  
   x_axis = np.arange(0, len(cnn_metrics[0.1]["accuracies"]) * num_iterations_before_validation, num_iterations_before_validation)
-  
   # Plot the accuracies as a function of iterations
   plt.plot(x_axis, cnn_metrics[0.01]["accuracies"], label = "Validation accuracies for lr = 0.01")
   plt.plot(x_axis, cnn_metrics[0.001]["accuracies"], label = "Validation accuracies for lr = 0.001")
@@ -143,10 +143,3 @@ def plot_parameter_testing(cnn_metrics,num_iterations_before_validation):
   plt.ylabel("Validation accuracy")
   plt.title("Validation accuracy as a function of iteration for CNN")
   plt.legend()
-
-# testing the model
-if __name__ == "__main__":
-  cnn_metrics, cnn = train_model(train_loader, valid_loader, test_loader)
-  plot_parameter_testing(cnn_metrics, 1000)
-  MODEL_PATH = r"cnn_model"
-  torch.save(cnn.state_dict(), MODEL_PATH)
