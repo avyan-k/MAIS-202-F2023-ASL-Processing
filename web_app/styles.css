@@ -1,0 +1,49 @@
+body {
+    background-color: #90EE90; /* Light Green - Forest Theme */
+    font-family: Arial, sans-serif;
+}
+
+header {
+    background-color: #006400; /* Dark Green - Forest Theme */
+    color: white;
+    padding: 50px;
+    height: 200px;
+}
+
+h1 {
+    font-size: 30px;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    text-align: right;
+}
+
+main {
+    text-align: center;
+    padding: 20px;
+}
+
+#image-container {
+    margin: 20px auto;
+}
+
+#captured-image {
+    max-width: 512px;
+    max-height: 512px;
+}
+
+button {
+    background-color: #228B22; /* Forest Green - Forest Theme */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #1E9022; /* Slightly Darker Forest Green */
+}
+
+#translation-output {
+    margin-top: 20px;
+    font-size: 18px;
+}

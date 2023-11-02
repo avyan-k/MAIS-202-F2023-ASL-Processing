@@ -1,53 +1,27 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>MAIS-202-F2023-ASL-PROCESSING</title>
-        <script>
-            function getData(){
-                console.log("hi!") 
-                fetch("http://127.0.0.1:5000/data")
-                .then(function (response){
-                    return response.json()
-                })
-                .then(function (data){
-                    console.log(data)
-                })
-            }
-        </script>
-        
+        <link rel="stylesheet" href="styles.css">
     </head>
     <body>
-        <style>
-            .headerDiv{
-                height: 250px;
-                background-color: #4F7B4A;
-                padding: 50px 70px;
-            }
-            h1 {
-                font-size: 30px;
-                font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-                color: white;
-                text-align: right;
-            }
-        </style>
-
-        <div class="headerDiv">
+        <header>
+            
             <img src="images/logo.png" alt="logo" width="220" height="200" class="logo" align="left">
+            <br style="height:20px">
             <h1>American Sign Language Translator</h1>
-        </div>
-        whats up
-        <br/>
-        <button onclick="getData();"> Click me! </button>
-        <video id="webcam" autoplay></video>
-        <script>
-            // Access the webcam and display the video stream
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(function(stream) {
-                    document.getElementById('webcam').srcObject = stream;
-                })
-                .catch(function(error) {
-                    console.error('Error accessing the webcam:', error);
-                });
-        </script>
+        </header>
+        
+        <main>
+            <div id="image-container">
+                <img id="captured-image" src="" alt="Captured Image">
+            </div>
+            <button id="capture-button">Click!</button>
+            <button id="done-button" onclick="translateImage()">Done</button>
+            <div id="translation-output"></div>
+        </main>
+        <script src="script.js"></script>
     </body>
 </html>
