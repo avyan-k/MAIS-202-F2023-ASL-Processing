@@ -32,17 +32,18 @@ class CNN_model(nn.Module):
       self.convolutional_network.append(nn.Conv2d(in_channels=kernelsPerLayers,out_channels=kernelsPerLayers*2, kernel_size=5,padding="same"))
       kernelsPerLayers *= 2
       
-    self.flatten = int((512 / (2**numberConv))**2 * initialKernels * 2 **(numberConv-1))
+    self.flatten = int((512 / (2**(numberConv if numberConv<3 else 3))))**2 * initialKernels * 2 **(numberConv-1)
 
     self.linear = nn.Linear(self.flatten, 27) 
 
   def forward(self, x):
     
     '''Forward pass function, needs to be defined for every model'''
-    for convLayer in self.convolutional_network:
+    for index,convLayer in enumerate(self.convolutional_network):
       x = convLayer(x)
       x = F.relu(x)
-      x = F.max_pool2d(x, 2)
+      if index <3:
+        x = F.max_pool2d(x, 2)
      # 2x2 maxpool
 
     x = torch.flatten(x, start_dim = 1) # Flatten to a 1D vector
@@ -52,7 +53,7 @@ class CNN_model(nn.Module):
     return x
   
 
-def train_model(train_loader, valid_loader, test_loader, num_epochs = 2,num_iterations_before_validation = 1000):
+def train_model(train_loader, valid_loader, test_loader, num_epochs = 2,num_iterations_before_validation = 30):
   
   start = time.time()
   # hyperparameters
@@ -67,9 +68,7 @@ def train_model(train_loader, valid_loader, test_loader, num_epochs = 2,num_iter
         "losses": []
     }
 
-    #loss for multiclass
     loss = nn.CrossEntropyLoss().to(DEVICE)
-    #test accuracy, for testing
     accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=27).to(DEVICE) # Regular accuracy
 
 
@@ -85,35 +84,25 @@ def train_model(train_loader, valid_loader, test_loader, num_epochs = 2,num_iter
         X_train = X_train.to(DEVICE)
         y_train = y_train.to(DEVICE)
 
-        # The optimizer accumulates the gradient of each weight as we do forward passes -> zero_grad resets all gradients to 0
         optimizer.zero_grad()
 
-        # Compute a forward pass and make a prediction
         y_hat = cnn(X_train)
 
-        # Compute the loss
         train_loss = loss(y_hat, y_train)
-
-        # Compute the gradients in the optimizer
+        
         train_loss.backward()
 
-        # Update the weights
         optimizer.step()
 
-        # Check if should compute the validation metrics for plotting later
         if iteration % num_iterations_before_validation == 0:
 
-          # Don't compute gradients on the validation set
           with torch.no_grad():
 
-            # Keep track of the losses & accuracies
             val_accuracy_sum = 0
             val_loss_sum = 0
 
-            # Make a predictions on the full validation set, batch by batch
             for X_val, y_val in valid_loader:
 
-              # Move the batch to GPU if it's available
               X_val = X_val.to(DEVICE)
               y_val = y_val.to(DEVICE)
 
@@ -121,19 +110,18 @@ def train_model(train_loader, valid_loader, test_loader, num_epochs = 2,num_iter
               val_accuracy_sum += accuracy(y_hat, y_val)
               val_loss_sum += loss(y_hat, y_val)
 
-            # Divide by the number of iterations (and move back to CPU)
             val_accuracy = (val_accuracy_sum / len(valid_loader)).cpu()
             val_loss = (val_loss_sum / len(valid_loader)).cpu()
 
-            # Store the values in the dictionary
             cnn_metrics[lr]["accuracies"].append(val_accuracy)
             cnn_metrics[lr]["losses"].append(val_loss)
 
-            # Print to console
-            with open("../learning_rate_training.txt", "w") as text_file:
-              text_file.write(f"LR = {lr} --- EPOCH = {epoch} --- ITERATION = {iteration}")
-              text_file.write(f"Validation loss = {val_loss} --- Validation accuracy = {val_accuracy}")
-              text_file.write("It has now been "+ str(time.time() - start) +" seconds since the beginning of the program")
+            text_file = open("results\learning_rate_training.txt", "a") 
+            text_file.write(f"LR = {lr} --- EPOCH = {epoch} --- ITERATION = {iteration}\n")
+            text_file.write(f"Validation loss = {val_loss} --- Validation accuracy = {val_accuracy}\n")
+            text_file.write("It has now been "+ str(time.time() - start) +" seconds since the beginning of the program\n")
+            print("It has now been "+ str(time.time() - start) +" seconds since the beginning of the program")
+            text_file.close()  
   return cnn_metrics
           
           
@@ -149,6 +137,7 @@ def plot_parameter_testing(cnn_metrics,num_iterations_before_validation):
 
 if __name__ == "__main__":
   cnn_metrics = train_model(train_loader, valid_loader, test_loader)
+  
   cnn_metrics, cnn = train_model(train_loader, valid_loader, test_loader)
   plot_parameter_testing(cnn_metrics, 1000)
   MODEL_PATH = r"cnn_model"

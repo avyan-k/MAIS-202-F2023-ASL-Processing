@@ -1,0 +1,12 @@
+LR = 0.01 --- EPOCH = 0 --- ITERATION = 0
+Validation loss = 3.3221235275268555 --- Validation accuracy = 0.03540981188416481
+It has now been 156.1192536354065 seconds since the beginning of the program
+LR = 0.01 --- EPOCH = 0 --- ITERATION = 30
+Validation loss = 3.3221235275268555 --- Validation accuracy = 0.03540981188416481
+It has now been 312.8794071674347 seconds since the beginning of the program
+LR = 0.01 --- EPOCH = 0 --- ITERATION = 60
+Validation loss = 3.3221235275268555 --- Validation accuracy = 0.03540981188416481
+It has now been 461.92088770866394 seconds since the beginning of the program
+LR = 0.01 --- EPOCH = 0 --- ITERATION = 0
+Validation loss = 3.3219597339630127 --- Validation accuracy = 0.035573747009038925
+It has now been 145.8843913078308 seconds since the beginning of the program

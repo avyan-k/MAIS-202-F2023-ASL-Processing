@@ -38,9 +38,9 @@ def load_data():
     test_dataset, _, _ = random_split(test_dataset, [TESTING_SET_SIZE, len(test_dataset) - TESTING_SET_SIZE, 0])
     
     # Set Batch Size and shuffles the data
-    train_loader = DataLoader(train_dataset, batch_size=100, shuffle=True)
-    valid_loader = DataLoader(valid_dataset, batch_size=100, shuffle=False)
-    test_loader = DataLoader(test_dataset, batch_size=100, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=50, shuffle=True)
+    valid_loader = DataLoader(valid_dataset, batch_size=50, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=50, shuffle=False)
     
     print(f"Training set size: {len(train_dataset)}")
     print(f"Validation set size: {len(valid_dataset)}")
