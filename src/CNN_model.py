@@ -11,6 +11,7 @@ from tqdm import tqdm
 import torchmetrics
 import loading_dataset as ld
 import time
+from sklearn.model_selection import GridSearchCV
 
 train_loader, valid_loader, test_loader = ld.load_data()
 DEVICE = ld.load_device()
@@ -38,7 +39,7 @@ class CNN_model(nn.Module):
 
     self.dense_network = nn.ModuleList()
 
-    if numberDense < 0:
+    if numberDense > 0:
       self.dense_network.append(nn.Linear(27, neuronsDLayer))
 
       for x in range(1, numberDense - 1):
@@ -67,7 +68,8 @@ class CNN_model(nn.Module):
     return x
   
 
-def train_model(train_loader, valid_loader, test_loader, num_epochs = 2,num_iterations_before_validation = 30):
+<<<<<<< HEAD
+def train_model(train_loader, valid_loader, test_loader, num_epochs = 2,num_iterations_before_validation = 30,weight_decay=0.001):
   
   start = time.time()
   # hyperparameters
@@ -87,56 +89,80 @@ def train_model(train_loader, valid_loader, test_loader, num_epochs = 2,num_iter
 
 
     cnn = CNN_model().to(DEVICE)
-    optimizer = optim.Adam(cnn.parameters(), lr)
+    optimizer = optim.Adam(cnn.parameters(), lr, weight_decay=weight_decay)
     cnn_models[lr] = cnn
+=======
+  def train_model(cnn,train_loader, valid_loader, test_loader, num_epochs = 2,num_iterations_before_validation = 30):
+>>>>>>> 055dfcf53418c6fdc71432f325cfbdb660fab18a
     
-    for epoch in range(num_epochs):
+    start = time.time()
+    # hyperparameters
+    lr_values = {0.01, 0.001}
+    cnn_metrics = {}
+    cnn_models = {}
 
-      # Iterate through the training data
-      for iteration, (X_train, y_train) in enumerate(train_loader):
-        # Move the batch to GPU if it's available
-        X_train = X_train.to(DEVICE)
-        y_train = y_train.to(DEVICE)
+    for lr in lr_values:
 
-        optimizer.zero_grad()
+      cnn_metrics[lr] = {
+          "accuracies": [],
+          "losses": []
+      }
 
-        y_hat = cnn(X_train)
+      loss = nn.CrossEntropyLoss().to(DEVICE)
+      accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=27).to(DEVICE) # Regular accuracy
 
-        train_loss = loss(y_hat, y_train)
-        
-        train_loss.backward()
 
-        optimizer.step()
+      cnn = cnn.to(DEVICE)
+      optimizer = optim.Adam(cnn.parameters(), lr)
+      cnn_models[lr] = cnn
+      
+      for epoch in range(num_epochs):
 
-        if iteration % num_iterations_before_validation == 0:
+        # Iterate through the training data
+        for iteration, (X_train, y_train) in enumerate(train_loader):
+          # Move the batch to GPU if it's available
+          X_train = X_train.to(DEVICE)
+          y_train = y_train.to(DEVICE)
 
-          with torch.no_grad():
+          optimizer.zero_grad()
 
-            val_accuracy_sum = 0
-            val_loss_sum = 0
+          y_hat = cnn(X_train)
 
-            for X_val, y_val in valid_loader:
+          train_loss = loss(y_hat, y_train)
+          
+          train_loss.backward()
 
-              X_val = X_val.to(DEVICE)
-              y_val = y_val.to(DEVICE)
+          optimizer.step()
 
-              y_hat = cnn(X_val)
-              val_accuracy_sum += accuracy(y_hat, y_val)
-              val_loss_sum += loss(y_hat, y_val)
+          if iteration % num_iterations_before_validation == 0:
 
-            val_accuracy = (val_accuracy_sum / len(valid_loader)).cpu()
-            val_loss = (val_loss_sum / len(valid_loader)).cpu()
+            with torch.no_grad():
 
-            cnn_metrics[lr]["accuracies"].append(val_accuracy)
-            cnn_metrics[lr]["losses"].append(val_loss)
+              val_accuracy_sum = 0
+              val_loss_sum = 0
 
-            text_file = open("results\learning_rate_training.txt", "a") 
-            text_file.write(f"LR = {lr} --- EPOCH = {epoch} --- ITERATION = {iteration}\n")
-            text_file.write(f"Validation loss = {val_loss} --- Validation accuracy = {val_accuracy}\n")
-            text_file.write("It has now been "+ str(time.time() - start) +" seconds since the beginning of the program\n")
-            print("It has now been "+ str(time.time() - start) +" seconds since the beginning of the program")
-            text_file.close()  
-  return cnn_metrics
+              for X_val, y_val in valid_loader:
+
+                X_val = X_val.to(DEVICE)
+                y_val = y_val.to(DEVICE)
+
+                y_hat = cnn(X_val)
+                val_accuracy_sum += accuracy(y_hat, y_val)
+                val_loss_sum += loss(y_hat, y_val)
+
+              val_accuracy = (val_accuracy_sum / len(valid_loader)).cpu()
+              val_loss = (val_loss_sum / len(valid_loader)).cpu()
+
+              cnn_metrics[lr]["accuracies"].append(val_accuracy)
+              cnn_metrics[lr]["losses"].append(val_loss)
+
+              text_file = open("results\learning_rate_training.txt", "a") 
+              text_file.write(f"LR = {lr} --- EPOCH = {epoch} --- ITERATION = {iteration}\n")
+              text_file.write(f"Validation loss = {val_loss} --- Validation accuracy = {val_accuracy}\n")
+              text_file.write("It has now been "+ str(time.time() - start) +" seconds since the beginning of the program\n")
+              print("It has now been "+ time.strftime("%Mm%Ss", time.gmtime(time.time() - start))  +" seconds since the beginning of the program")
+              text_file.close()  
+    return cnn_metrics
           
           
 def plot_parameter_testing(cnn_metrics,num_iterations_before_validation):
@@ -150,9 +176,28 @@ def plot_parameter_testing(cnn_metrics,num_iterations_before_validation):
   plt.legend()
 
 if __name__ == "__main__":
-  cnn_metrics = train_model(train_loader, valid_loader, test_loader)
+<<<<<<< HEAD
+  param_grid = {
+    'weight_decay': [0.0001, 0.001, 0.01], 
+    'learning_rate': [0.001],
+    'num_epochs': [5]
+  }
+  model = CNN_model() 
+  grid_search = GridSearchCV(model, param_grid, cv=3)
+  grid_search.fit(X_train, y_train)
+  best_weight_decay = grid_search.best_params_['weight_decay']
+  print(best_weight_decay)
+  # cnn_metrics = train_model(train_loader, valid_loader, test_loader)
   
-  cnn_metrics, cnn = train_model(train_loader, valid_loader, test_loader)
+  # cnn_metrics, cnn = train_model(train_loader, valid_loader, test_loader)
+  # plot_parameter_testing(cnn_metrics, 1000)
+  # MODEL_PATH = r"cnn_model"
+  # torch.save(cnn.state_dict(), MODEL_PATH)
+=======
+  cnn = CNN_model(numberDense=5, neuronsDLayer=20)
+  cnn_metrics = cnn.train_model(train_loader, valid_loader, test_loader)
+  
   plot_parameter_testing(cnn_metrics, 1000)
   MODEL_PATH = r"cnn_model"
-  torch.save(cnn.state_dict(), MODEL_PATH)
+  #torch.save(cnn.state_dict(), MODEL_PATH)
+>>>>>>> 055dfcf53418c6fdc71432f325cfbdb660fab18a
