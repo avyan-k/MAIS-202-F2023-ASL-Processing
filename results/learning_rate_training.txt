@@ -10,3 +10,6 @@ It has now been 461.92088770866394 seconds since the beginning of the program
 LR = 0.01 --- EPOCH = 0 --- ITERATION = 0
 Validation loss = 3.3219597339630127 --- Validation accuracy = 0.035573747009038925
 It has now been 145.8843913078308 seconds since the beginning of the program
+LR = 0.01 --- EPOCH = 0 --- ITERATION = 0
+Validation loss = 3.3179585933685303 --- Validation accuracy = 0.03819669410586357
+It has now been 128.60137939453125 seconds since the beginning of the program

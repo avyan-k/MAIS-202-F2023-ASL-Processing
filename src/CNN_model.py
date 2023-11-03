@@ -120,7 +120,7 @@ def train_model(train_loader, valid_loader, test_loader, num_epochs = 2,num_iter
             text_file.write(f"LR = {lr} --- EPOCH = {epoch} --- ITERATION = {iteration}\n")
             text_file.write(f"Validation loss = {val_loss} --- Validation accuracy = {val_accuracy}\n")
             text_file.write("It has now been "+ str(time.time() - start) +" seconds since the beginning of the program\n")
-            print("It has now been "+ str(time.time() - start) +" seconds since the beginning of the program")
+            print("It has now been "+ time.strftime("%Mm%Ss", time.gmtime(time.time() - start))  +" seconds since the beginning of the program")
             text_file.close()  
   return cnn_metrics
           
@@ -138,7 +138,6 @@ def plot_parameter_testing(cnn_metrics,num_iterations_before_validation):
 if __name__ == "__main__":
   cnn_metrics = train_model(train_loader, valid_loader, test_loader)
   
-  cnn_metrics, cnn = train_model(train_loader, valid_loader, test_loader)
   plot_parameter_testing(cnn_metrics, 1000)
   MODEL_PATH = r"cnn_model"
-  torch.save(cnn.state_dict(), MODEL_PATH)
+  #torch.save(cnn.state_dict(), MODEL_PATH)
