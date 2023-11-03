@@ -36,6 +36,16 @@ class CNN_model(nn.Module):
 
     self.linear = nn.Linear(self.flatten, 27) 
 
+    self.dense_network = nn.ModuleList()
+
+    if numberDense < 0:
+      self.dense_network.append(nn.Linear(27, neuronsDLayer))
+
+      for x in range(1, numberDense - 1):
+        self.dense_network.append(nn.Linear(neuronsDLayer, neuronsDLayer))
+
+      self.dense_network.append(nn.Linear(neuronsDLayer, 27))
+
   def forward(self, x):
     
     '''Forward pass function, needs to be defined for every model'''
@@ -48,6 +58,10 @@ class CNN_model(nn.Module):
 
     x = torch.flatten(x, start_dim = 1) # Flatten to a 1D vector
     x = self.linear(x)
+
+    for dense_layer in self.dense_network:
+      x = dense_layer(x)
+
     x = F.softmax(x, dim = 1) # dim = 1 to softmax along the rows of the output (We want the probabilities of all classes to sum up to 1)
 
     return x
