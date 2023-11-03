@@ -69,6 +69,7 @@ class CNN_model(nn.Module):
   
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 def train_model(train_loader, valid_loader, test_loader, num_epochs = 2,num_iterations_before_validation = 30,weight_decay=0.001):
   
   start = time.time()
@@ -91,6 +92,9 @@ def train_model(train_loader, valid_loader, test_loader, num_epochs = 2,num_iter
     cnn = CNN_model().to(DEVICE)
     optimizer = optim.Adam(cnn.parameters(), lr, weight_decay=weight_decay)
     cnn_models[lr] = cnn
+=======
+  def train_model(cnn,train_loader, valid_loader, test_loader, num_epochs = 2,num_iterations_before_validation = 30):
+>>>>>>> 055dfcf53418c6fdc71432f325cfbdb660fab18a
 =======
   def train_model(cnn,train_loader, valid_loader, test_loader, num_epochs = 2,num_iterations_before_validation = 30):
 >>>>>>> 055dfcf53418c6fdc71432f325cfbdb660fab18a
@@ -177,6 +181,7 @@ def plot_parameter_testing(cnn_metrics,num_iterations_before_validation):
 
 if __name__ == "__main__":
 <<<<<<< HEAD
+<<<<<<< HEAD
   param_grid = {
     'weight_decay': [0.0001, 0.001, 0.01], 
     'learning_rate': [0.001],
@@ -194,10 +199,16 @@ if __name__ == "__main__":
   # MODEL_PATH = r"cnn_model"
   # torch.save(cnn.state_dict(), MODEL_PATH)
 =======
+=======
+>>>>>>> 055dfcf53418c6fdc71432f325cfbdb660fab18a
   cnn = CNN_model(numberDense=5, neuronsDLayer=20)
   cnn_metrics = cnn.train_model(train_loader, valid_loader, test_loader)
   
   plot_parameter_testing(cnn_metrics, 1000)
   MODEL_PATH = r"cnn_model"
+<<<<<<< HEAD
+  #torch.save(cnn.state_dict(), MODEL_PATH)
+>>>>>>> 055dfcf53418c6fdc71432f325cfbdb660fab18a
+=======
   #torch.save(cnn.state_dict(), MODEL_PATH)
 >>>>>>> 055dfcf53418c6fdc71432f325cfbdb660fab18a
