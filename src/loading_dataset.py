@@ -24,10 +24,11 @@ def load_data():
     standard_deviations = [0.1584,0.1648,0.1768]
     
     # Data Augmentation
-    randomizing_transforms = [transforms.RandomRotation(30),transforms.RandomHorizontalFlip()]
+    randomizing_transforms = [transforms.RandomRotation(15),transforms.RandomHorizontalFlip()]
    
     # Transform the data to torch tensors and normalize it
-    processing_transforms = [transforms.ToTensor(), transforms.Normalize(means, standard_deviations)]
+    processing_transforms = [transforms.ToTensor()]
+    #processing_transforms = [transforms.ToTensor(), transforms.Normalize(means, standard_deviations)]
     
     # Loading The Dataset
     full_train_dataset = datasets.ImageFolder(train_data_path, transform=transforms.Compose(randomizing_transforms + processing_transforms))

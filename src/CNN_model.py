@@ -71,7 +71,7 @@ class CNN_model(nn.Module):
     
     start = time.time()
     # hyperparameters
-    lr_values = {0.01, 0.001}
+    lr_values = {0.1, 0.01}
     cnn_metrics = {}
     cnn_models = {}
 
@@ -103,7 +103,6 @@ class CNN_model(nn.Module):
           y_hat = cnn(X_train)
 
           train_loss = loss(y_hat, y_train)
-          
           train_loss.backward()
 
           optimizer.step()
