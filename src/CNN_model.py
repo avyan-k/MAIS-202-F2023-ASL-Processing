@@ -11,6 +11,7 @@ from tqdm import tqdm
 import torchmetrics
 import loading_dataset as ld
 import time
+from sklearn.model_selection import GridSearchCV
 
 train_loader, valid_loader, test_loader = ld.load_data()
 DEVICE = ld.load_device()
@@ -67,7 +68,36 @@ class CNN_model(nn.Module):
     return x
   
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+def train_model(train_loader, valid_loader, test_loader, num_epochs = 2,num_iterations_before_validation = 30,weight_decay=0.001):
+  
+  start = time.time()
+  # hyperparameters
+  lr_values = {0.01, 0.001}
+  cnn_metrics = {}
+  cnn_models = {}
+
+  for lr in lr_values:
+
+    cnn_metrics[lr] = {
+        "accuracies": [],
+        "losses": []
+    }
+
+    loss = nn.CrossEntropyLoss().to(DEVICE)
+    accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=27).to(DEVICE) # Regular accuracy
+
+
+    cnn = CNN_model().to(DEVICE)
+    optimizer = optim.Adam(cnn.parameters(), lr, weight_decay=weight_decay)
+    cnn_models[lr] = cnn
+=======
   def train_model(cnn,train_loader, valid_loader, test_loader, num_epochs = 2,num_iterations_before_validation = 30):
+>>>>>>> 055dfcf53418c6fdc71432f325cfbdb660fab18a
+=======
+  def train_model(cnn,train_loader, valid_loader, test_loader, num_epochs = 2,num_iterations_before_validation = 30):
+>>>>>>> 055dfcf53418c6fdc71432f325cfbdb660fab18a
     
     start = time.time()
     # hyperparameters
@@ -149,9 +179,35 @@ def plot_parameter_testing(cnn_metrics,num_iterations_before_validation):
   plt.legend()
 
 if __name__ == "__main__":
+<<<<<<< HEAD
+<<<<<<< HEAD
+  param_grid = {
+    'weight_decay': [0.0001, 0.001, 0.01], 
+    'learning_rate': [0.001],
+    'num_epochs': [5]
+  }
+  model = CNN_model() 
+  grid_search = GridSearchCV(model, param_grid, cv=3)
+  grid_search.fit(X_train, y_train)
+  best_weight_decay = grid_search.best_params_['weight_decay']
+  print(best_weight_decay)
+  # cnn_metrics = train_model(train_loader, valid_loader, test_loader)
+  
+  # cnn_metrics, cnn = train_model(train_loader, valid_loader, test_loader)
+  # plot_parameter_testing(cnn_metrics, 1000)
+  # MODEL_PATH = r"cnn_model"
+  # torch.save(cnn.state_dict(), MODEL_PATH)
+=======
+=======
+>>>>>>> 055dfcf53418c6fdc71432f325cfbdb660fab18a
   cnn = CNN_model(numberDense=5, neuronsDLayer=20)
   cnn_metrics = cnn.train_model(train_loader, valid_loader, test_loader)
   
   plot_parameter_testing(cnn_metrics, 1000)
   MODEL_PATH = r"cnn_model"
+<<<<<<< HEAD
   #torch.save(cnn.state_dict(), MODEL_PATH)
+>>>>>>> 055dfcf53418c6fdc71432f325cfbdb660fab18a
+=======
+  #torch.save(cnn.state_dict(), MODEL_PATH)
+>>>>>>> 055dfcf53418c6fdc71432f325cfbdb660fab18a
