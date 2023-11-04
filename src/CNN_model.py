@@ -35,17 +35,23 @@ class CNN_model(nn.Module):
       
     self.flatten = int((512 / (2**(numberConv if numberConv<3 else 3))))**2 * initialKernels * 2 **(numberConv-1)
 
-    self.linear = nn.Linear(self.flatten, 27) 
-
-    self.dense_network = nn.ModuleList()
+    self.dense_network = nn.ModuleList() #now contains both hidden and non-hidden dense layers (i.e. final linear is included)
 
     if numberDense > 0:
-      self.dense_network.append(nn.Linear(27, neuronsDLayer))
+      #add the dense layers appropriately
+      self.dense_network.append(nn.Linear(self.flatten, neuronsDLayer)) #first dense layer
 
-      for x in range(1, numberDense - 1):
+      for i in range(numberDense - 1): #one dense layer has already been added
         self.dense_network.append(nn.Linear(neuronsDLayer, neuronsDLayer))
 
+      #classification layer - not counted as part of (hidden)dense network
       self.dense_network.append(nn.Linear(neuronsDLayer, 27))
+
+
+    else: #only 1 dense layer for classifications - no hidden - default
+      self.dense_network.append(nn.Linear(self.flatten, 27))
+
+
 
   def forward(self, x):
     
@@ -58,7 +64,6 @@ class CNN_model(nn.Module):
      # 2x2 maxpool
 
     x = torch.flatten(x, start_dim = 1) # Flatten to a 1D vector
-    x = self.linear(x)
 
     for dense_layer in self.dense_network:
       x = dense_layer(x)
