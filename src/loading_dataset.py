@@ -35,7 +35,7 @@ def load_data():
     test_dataset = datasets.ImageFolder(test_data_path, transform=transforms.Compose(processing_transforms))
     
     # Split the datasets into training, validation, and test sets
-    train_dataset, valid_dataset, _ = random_split(full_train_dataset, [int(TRAIN_SET_SIZE*0.75), int(TRAIN_SET_SIZE*0.25),0])
+    train_dataset, valid_dataset, _ = random_split(full_train_dataset, [int(TRAIN_SET_SIZE*0.01), int(TRAIN_SET_SIZE*0.99),0])
     test_dataset, _, _ = random_split(test_dataset, [TESTING_SET_SIZE, len(test_dataset) - TESTING_SET_SIZE, 0])
     
     # Set Batch Size and shuffles the data

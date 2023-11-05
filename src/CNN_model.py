@@ -61,18 +61,18 @@ class CNN_model(nn.Module):
     x = self.linear(x)
 
     for dense_layer in self.dense_network:
-      x = dense_layer(x)
+      x = F.leaky_relu(dense_layer(x))
 
     x = F.softmax(x, dim = 1) # dim = 1 to softmax along the rows of the output (We want the probabilities of all classes to sum up to 1)
 
     return x
   
 
-  def train_model(cnn,train_loader, valid_loader, test_loader, num_epochs = 2,num_iterations_before_validation = 30):
+  def train_model(cnn,train_loader, valid_loader, test_loader, num_epochs = 200,num_iterations_before_validation = 30):
     
     start = time.time()
     # hyperparameters
-    lr_values = {0.1, 0.01}
+    lr_values = {1, 0.01}
     cnn_metrics = {}
     cnn_models = {}
 
@@ -92,51 +92,57 @@ class CNN_model(nn.Module):
       cnn_models[lr] = cnn
       
       for epoch in range(num_epochs):
-
+        
         # Iterate through the training data
         for iteration, (X_train, y_train) in enumerate(train_loader):
           # Move the batch to GPU if it's available
+          optimizer.zero_grad()
           X_train = X_train.to(DEVICE)
           y_train = y_train.to(DEVICE)
 
-          optimizer.zero_grad()
+          
 
           y_hat = cnn(X_train)
 
-          train_loss = loss(y_hat, y_train)
-
+          train_loss = loss(y_hat,y_train)
+          
           train_loss.backward()
 
           optimizer.step()
 
-          if iteration % num_iterations_before_validation == 0:
+          # if iteration % num_iterations_before_validation == 0:
 
-            with torch.no_grad():
+          #   with torch.no_grad():
 
-              val_accuracy_sum = 0
-              val_loss_sum = 0
+          #     val_accuracy_sum = 0
+          #     val_loss_sum = 0
 
-              for X_val, y_val in valid_loader:
+          #     for X_val, y_val in valid_loader:
 
-                X_val = X_val.to(DEVICE)
-                y_val = y_val.to(DEVICE)
+          #       X_val = X_val.to(DEVICE)
+          #       y_val = y_val.to(DEVICE)
 
-                y_hat = cnn(X_val)
-                val_accuracy_sum += accuracy(y_hat, y_val)
-                val_loss_sum += loss(y_hat, y_val)
+          #       y_hat = cnn(X_val)
+          #       val_accuracy_sum += accuracy(y_hat, y_val)
+          #       val_loss_sum += loss(y_hat, y_val)
 
-              val_accuracy = (val_accuracy_sum / len(valid_loader)).cpu()
-              val_loss = (val_loss_sum / len(valid_loader)).cpu()
+          #     val_accuracy = (val_accuracy_sum / len(valid_loader)).cpu()
+          #     val_loss = (val_loss_sum / len(valid_loader)).cpu()
 
-              cnn_metrics[lr]["accuracies"].append(val_accuracy)
-              cnn_metrics[lr]["losses"].append(val_loss)
+          #     cnn_metrics[lr]["accuracies"].append(val_accuracy)
+          #     cnn_metrics[lr]["losses"].append(val_loss)
 
-              text_file = open("results\learning_rate_training.txt", "a") 
-              text_file.write(f"LR = {lr} --- EPOCH = {epoch} --- ITERATION = {iteration}\n")
-              text_file.write(f"Validation loss = {val_loss} --- Validation accuracy = {val_accuracy}\n")
-              text_file.write("It has now been "+ str(time.time() - start) +" seconds since the beginning of the program\n")
-              print("It has now been "+ time.strftime("%Mm%Ss", time.gmtime(time.time() - start))  +" seconds since the beginning of the program")
-              text_file.close()  
+          #     text_file = open("results\learning_rate_training.txt", "a") 
+          #     text_file.write(f"LR = {lr} --- EPOCH = {epoch} --- ITERATION = {iteration}\n")
+          #     text_file.write(f"Validation loss = {val_loss} --- Validation accuracy = {val_accuracy}\n")
+          #     text_file.write("It has now been "+ str(time.time() - start) +" seconds since the beginning of the program\n")
+          #     print("It has now been "+ time.strftime("%Mm%Ss", time.gmtime(time.time() - start))  +"  since the beginning of the program")
+          #     text_file.close() 
+        text_file = open("results\subset_training.txt", "a")  
+        print("loss:", train_loss.item(),"epoch:", epoch)
+        text_file.write("loss: "+ str(train_loss.item()) +" epoch: "+ str(epoch) + "\n")
+        print("It has now been", time.strftime("%Mm%Ss", time.gmtime(time.time() - start)),"since the beginning of the program")
+        text_file.write(time.strftime("%Mm%Ss", time.gmtime(time.time() - start))  +" since the beginning of the program\n")
     return cnn_metrics
           
           
