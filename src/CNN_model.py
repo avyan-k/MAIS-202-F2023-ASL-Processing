@@ -35,17 +35,23 @@ class CNN_model(nn.Module):
       
     self.flatten = int((512 / (2**(numberConv if numberConv<3 else 3))))**2 * initialKernels * 2 **(numberConv-1)
 
-    self.linear = nn.Linear(self.flatten, 27) 
-
-    self.dense_network = nn.ModuleList()
+    self.dense_network = nn.ModuleList() #now contains both hidden and non-hidden dense layers (i.e. final linear is included)
 
     if numberDense > 0:
-      self.dense_network.append(nn.Linear(27, neuronsDLayer))
+      #add the dense layers appropriately
+      self.dense_network.append(nn.Linear(self.flatten, neuronsDLayer)) #first dense layer
 
-      for x in range(1, numberDense - 1):
+      for i in range(numberDense - 1): #one dense layer has already been added
         self.dense_network.append(nn.Linear(neuronsDLayer, neuronsDLayer))
 
+      #classification layer - not counted as part of (hidden)dense network
       self.dense_network.append(nn.Linear(neuronsDLayer, 27))
+
+
+    else: #only 1 dense layer for classifications - no hidden - default
+      self.dense_network.append(nn.Linear(self.flatten, 27))
+
+
 
   def forward(self, x):
     
@@ -58,7 +64,6 @@ class CNN_model(nn.Module):
      # 2x2 maxpool
 
     x = torch.flatten(x, start_dim = 1) # Flatten to a 1D vector
-    x = self.linear(x)
 
     for dense_layer in self.dense_network:
       x = F.leaky_relu(dense_layer(x))
@@ -68,7 +73,7 @@ class CNN_model(nn.Module):
     return x
   
 
-  def train_model(cnn,train_loader, valid_loader, test_loader, num_epochs = 200,num_iterations_before_validation = 30):
+  def train_model(cnn,train_loader, valid_loader, test_loader, num_epochs = 2,num_iterations_before_validation = 30,weight_decay=0.001):
     
     start = time.time()
     # hyperparameters
@@ -88,7 +93,7 @@ class CNN_model(nn.Module):
 
 
       cnn = cnn.to(DEVICE)
-      optimizer = optim.Adam(cnn.parameters(), lr)
+      optimizer = optim.Adam(cnn.parameters(), lr,weight_decay=weight_decay)
       cnn_models[lr] = cnn
       
       for epoch in range(num_epochs):
@@ -163,3 +168,13 @@ if __name__ == "__main__":
   plot_parameter_testing(cnn_metrics, 1000)
   MODEL_PATH = r"cnn_model"
   #torch.save(cnn.state_dict(), MODEL_PATH)
+  # param_grid = {
+  #   'weight_decay': [0.0001, 0.001, 0.01], 
+  #   'learning_rate': [0.001],
+  #   'num_epochs': [5]
+  # }
+  # model = CNN_model() 
+  # grid_search = GridSearchCV(model, param_grid, cv=3)
+  # grid_search.fit(X_train, y_train)
+  # best_weight_decay = grid_search.best_params_['weight_decay']
+  # print(best_weight_decay)
