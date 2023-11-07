@@ -1,8 +1,0 @@
-loss: 3.3342785835266113 epoch: 0
-00m07s since the beginning of the program
-loss: 3.3110227584838867 epoch: 1
-00m11s since the beginning of the program
-loss: 3.3342785835266113 epoch: 2
-00m14s since the beginning of the program
-loss: 3.3342785835266113 epoch: 3
-00m17s since the beginning of the program
