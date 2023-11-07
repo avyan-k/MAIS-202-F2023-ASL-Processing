@@ -12,6 +12,7 @@ import torchmetrics
 import loading_dataset as ld
 import time
 from sklearn.model_selection import GridSearchCV
+from itertools import product
 
 train_loader, valid_loader, test_loader = ld.load_data()
 DEVICE = ld.load_device()
@@ -24,7 +25,8 @@ class CNN_model(nn.Module):
     
     self.convolutional_network = nn.ModuleList() # list that will store the convolutional layers of the model
     kernelsPerLayers = initialKernels
-    #add batch normalization layer
+    
+    # add batch normalization layer
     self.convolutional_network.append(nn.BatchNorm2d(3))
     self.convolutional_network.append(nn.Conv2d(in_channels=3,out_channels=kernelsPerLayers, kernel_size=5,padding="same"))
     
@@ -88,13 +90,19 @@ class CNN_model(nn.Module):
     start = time.time()
 
     # hyperparameters:
-    lr_values = {0.1, 0.01, 0.001}
+    lr_wd_grid_search = {
+    'learning rate': [0.1,0.01,0.001],
+    'weight_decay':  [0.1,0.01,0.001]
+    }
+
+    # Generate all possible combinations of lr_wd_grid_search values
+    combo = product(lr_wd_grid_search['learning rate'], lr_wd_grid_search['weight_decay'])
 
 		# to store metrics and models for different learning rates during training
     cnn_metrics = {}
     cnn_models = {}
 
-    for lr in lr_values:
+    for (lr,wd) in combo:
 			
 			# to store training and validation accuracies and losses
       cnn_metrics[lr] = {
@@ -112,7 +120,7 @@ class CNN_model(nn.Module):
       cnn = self.to(DEVICE)
 
 			# Initializes the Adam optimizer with the model's parameters
-      optimizer = optim.Adam(cnn.parameters(), lr,weight_decay=weight_decay)
+      optimizer = optim.Adam(cnn.parameters(), lr,weight_decay=wd)
       cnn_models[lr] = cnn
       
       for epoch in range(num_epochs):
@@ -194,9 +202,23 @@ def plot_parameter_testing(cnn_metrics,num_iterations_before_validation):
 
 if __name__ == "__main__":
   
-  cnn = CNN_model(numberDense=10, neuronsDLayer=20)
-  cnn_metrics = cnn.train_model(train_loader, valid_loader, test_loader)
+  # Grid Search
+  hyperparam = {
+    'number of dense layers': [4, 5, 6],
+    'num of neureons per dense layer': [7, 8, 9],
+    'dropout rate': [0.8,0.6,0.5]
+  }
+  output = []
+  # Generate all possible combinations of hyperparameters values
+  para_combo = product(hyperparam['number of dense layers'], hyperparam['num of neureons per dense layer'], hyperparam['dropout rate'])
   
+  # Iterate through the hyperparameter's combinations
+  for (numberDense,neuronsDLayer,dropout) in para_combo:
+    
+    cnn = CNN_model(numberConv=3,initialKernels=5,numberDense=numberDense,neuronsDLayer=neuronsDLayer,dropout=dropout)
+    cnn_metrics = cnn.train_model(train_loader, valid_loader, test_loader)
+    output.append(cnn_metrics)
+    
   # plot_parameter_testing(cnn_metrics, 1000)
   # MODEL_PATH = r"cnn_model"
   # torch.save(cnn.state_dict(), MODEL_PATH)
