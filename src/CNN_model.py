@@ -19,7 +19,7 @@ DEVICE = ld.load_device()
 
 class CNN_model(nn.Module):
 
-  def __init__(self,numberConv=3,initialKernels=5,numberDense = 0,neuronsDLayer=0,dropout=0.5):
+  def __init__(self,numberConv=3,initialKernels=5,numberDense = 0,neuronsDLayer=0,dropout_rate=0.5):
     
     super(CNN_model, self).__init__() # calls the constructor of the parent class (nn.Module) to properly initialize the model
     
@@ -43,18 +43,23 @@ class CNN_model(nn.Module):
     self.dense_network = nn.ModuleList()
 
     if numberDense > 0:
-      #add batch normalization layer
+      # add batch normalization layer
       self.dense_network.append(nn.BatchNorm1d(self.flatten))
       # add the dense layers appropriately
       self.dense_network.append(nn.Linear(self.flatten, neuronsDLayer)) # first dense layer
+      # add dropout after the first dense layer
+      self.dense_network.append(nn.Dropout(p=dropout_rate))
 
       for i in range(numberDense - 1): # one dense layer has already been added
+        
         self.dense_network.append(nn.Linear(neuronsDLayer, neuronsDLayer))
-        #add batch normalization layer
+        # add batch normalization layer
         self.dense_network.append(nn.BatchNorm1d(neuronsDLayer))
+        # add dropout after each subsequent dense layer
+        self.dense_network.append(nn.Dropout(p=dropout_rate))
+        
       # classification layer - not counted as part of (hidden)dense network
       self.dense_network.append(nn.Linear(neuronsDLayer, 27))
-
 
     else: # only 1 dense layer for classifications - no hidden - default
 
@@ -204,9 +209,9 @@ if __name__ == "__main__":
   
   # Grid Search
   hyperparam = {
-    'number of dense layers': [4, 5, 6],
-    'num of neureons per dense layer': [7, 8, 9],
-    'dropout rate': [0.8,0.6,0.5]
+    'number of dense layers': [3, 5, 10],
+    'num of neureons per dense layer': [3, 5, 10],
+    'dropout rate': [0.5,0.8,1]
   }
   output = []
   # Generate all possible combinations of hyperparameters values
@@ -218,15 +223,3 @@ if __name__ == "__main__":
     cnn = CNN_model(numberConv=3,initialKernels=5,numberDense=numberDense,neuronsDLayer=neuronsDLayer,dropout=dropout)
     cnn_metrics = cnn.train_model(train_loader, valid_loader, test_loader)
     output.append(cnn_metrics)
-    
-  # plot_parameter_testing(cnn_metrics, 1000)
-  # MODEL_PATH = r"cnn_model"
-  # torch.save(cnn.state_dict(), MODEL_PATH)
-  # param_grid = {
-  #   'weight_decay': [0.0001, 0.001, 0.01], 
-  # }
-  # model = CNN_model() 
-  # grid_search = GridSearchCV(model, param_grid, cv=3)
-  # grid_search.fit(X_train, y_train)
-  # best_weight_decay = grid_search.best_params_['weight_decay']
-  # print(best_weight_decay)

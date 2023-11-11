@@ -1,0 +1,52 @@
+#webcam {
+    height: 512px;
+    width: 512px;
+}
+
+header {
+    background-color: #006400; /* Dark Green - Forest Theme */
+    color: white;
+    padding: 50px;
+    height: 200px;
+}
+
+h1 {
+    font-size: 30px;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    text-align: right;
+}
+
+#capturedImage {
+    height: 512px;
+    width: 512px;
+}
+
+#image-container {
+    margin: 20px auto;
+}
+
+button {
+    background-color: #6db06e; /* Forest Green - Forest Theme */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #1E9022; /* Slightly Darker Forest Green */
+}
+
+#translation-output {
+    margin-top: 20px;
+    font-size: 18px;
+}
+body {
+    background-color: #428f43; /* Forest Green - Forest Theme */
+    font-family: Arial, sans-serif;
+}
+main {
+    text-align: center;
+    padding: 20px;
+}
