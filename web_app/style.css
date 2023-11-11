@@ -38,6 +38,10 @@ button:hover {
     background-color: #1E9022; /* Slightly Darker Forest Green */
 }
 
+button:disabled {
+    background-color: #bbedbc;
+}
+
 #translation-output {
     margin-top: 20px;
     font-size: 18px;
