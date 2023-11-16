@@ -41,19 +41,34 @@ def load_data_mnist():
 def load_data():
 
     # Data Normalization
-    means = [0.4916,0.4697,0.4251]
-    standard_deviations = [0.1584,0.1648,0.1768]
     
-    # Data Augmentation
-    randomizing_transforms = [transforms.RandomRotation(15),transforms.RandomHorizontalFlip()]
-   
-    # Transform the data to torch tensors and normalize it
-    # processing_transforms = [transforms.ToTensor()] # TODO
-    processing_transforms = [transforms.ToTensor(), transforms.Normalize(means, standard_deviations)]
+    # means = [0.4916,0.4697,0.4251] # tracy's bad calculations, can probably discare
+    # standard_deviations = [0.1584,0.1648,0.1768]
     
-    # Loading The Dataset
-    full_train_dataset = datasets.ImageFolder(train_data_path, transform=transforms.Compose(processing_transforms))
-    test_dataset = datasets.ImageFolder(test_data_path, transform=transforms.Compose(processing_transforms))
+    # means = [0.5,0.5,0.5]
+    # standard_deviations = [0.5,0.5,0.5]
+    
+    # means = [0.4916, 0.4699, 0.4255] # after hyper para tuning gives very intense pics
+    # standard_deviations = [0.0251, 0.0265, 0.0278]
+    
+    means = [0.2,0.2,0.2] # gives descent pics but pick black for dark background with dark skin tones
+    standard_deviations = [0.8,0.8,0.8]
+    
+    # Define the transformations, including normalization
+    processing_transforms = transforms.Compose([
+        transforms.ToTensor(),                             # Convert PIL Image to tensor
+        transforms.Normalize(means, standard_deviations),   # Normalize the image
+        transforms.RandomRotation(15),                      # Data augmentation
+        transforms.RandomHorizontalFlip()
+    ])
+    
+    full_train_dataset = datasets.ImageFolder(train_data_path,transform=processing_transforms)
+    test_dataset = datasets.ImageFolder(test_data_path,transform=processing_transforms)
+
+    
+    # # Loading The Dataset
+    # full_train_dataset = datasets.ImageFolder(train_data_path, transform=transforms.Compose(processing_transforms))
+    # test_dataset = datasets.ImageFolder(test_data_path, transform=transforms.Compose(processing_transforms))
     
     # Split the datasets into training, validation, and test sets
     train_dataset, valid_dataset, _ = random_split(full_train_dataset, [int(TRAIN_SET_SIZE*0.25), int(TRAIN_SET_SIZE*0.25),int(TRAIN_SET_SIZE*0.50)])
@@ -88,10 +103,12 @@ if __name__ == "__main__":
     
     download_data()
     train_loader, valid_loader, test_loader = load_data()
+    counter=0
     
     for images, labels in train_loader:
-        plt.imshow(images[0].permute(1, 2, 0))
+        if counter == 5 : break
+        plt.imshow(images[counter].permute(1, 2, 0))
         plt.title(f"Label: {labels[0]}")
         plt.show()
-        break
+        counter+=1
     
