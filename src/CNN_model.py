@@ -112,6 +112,10 @@ def train_model(cnn ,train_loader, valid_loader, test_loader, num_epochs = 200,n
         "accuracies": [],
         "losses": []
     }
+    cnn_metrics[wd] = {
+        "accuracies": [],
+        "losses": []
+    }
 
     # to measure the error between predicted and true class labels
     # loss is moved to GPU
@@ -124,9 +128,10 @@ def train_model(cnn ,train_loader, valid_loader, test_loader, num_epochs = 200,n
 
     # Initializes the Adam optimizer with the model's parameters
     # optimizer = optim.SGD(cnn.parameters(), lr,weight_decay=wd)
-    optimizer = optim.Adam(cnn.parameters(), lr=0.1)
+    optimizer = optim.Adam(cnn.parameters(), lr=lr,weight_decay=wd)
 
     cnn_models[lr] = cnn
+    cnn_models[wd] = cnn
     
     for epoch in range(num_epochs):
       
