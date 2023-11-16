@@ -2,3 +2,4 @@ synthetic-asl-alphabet
 src/__pycache__/*.pyc
 results/training/*.txt
 src/tempCodeRunnerFile.py
+mnist
