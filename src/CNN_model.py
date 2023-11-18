@@ -14,7 +14,8 @@ import time
 from datetime import datetime
 from sklearn.model_selection import GridSearchCV
 from itertools import product
-from torchsummary import summary
+from torchinfo import summary
+
 
 
 
@@ -25,37 +26,7 @@ class CNN_model(nn.Module):
   def __init__(self,numberConvolutionLayers=3,initialKernels=5,numberDense = 0,neuronsDLayer=0,dropout=0.5,dataset = "ASL"):
     
     super(CNN_model, self).__init__() # calls the constructor of the parent class (nn.Module) to properly initialize the model
-    self.network = nn.Sequential(
-      nn.Conv2d(in_channels=3,out_channels=64, kernel_size=3,padding="same"),
-      nn.BatchNorm2d(64),
-      nn.ReLU(),
-      nn.MaxPool2d(2),
-      
-      nn.Conv2d(in_channels=64,out_channels=128, kernel_size=3,padding="same"),
-      nn.BatchNorm2d(128),
-      nn.ReLU(),
-      nn.MaxPool2d(2),
 
-      nn.Conv2d(in_channels=128,out_channels=256, kernel_size=3,padding="same"),
-      nn.BatchNorm2d(256),
-      nn.ReLU(),
-      nn.MaxPool2d(2),
-
-      nn.Conv2d(in_channels=256,out_channels=512, kernel_size=3,padding="same"),
-      nn.BatchNorm2d(512),
-      nn.ReLU(),
-      nn.MaxPool2d(2),
-
-      nn.Flatten(start_dim=1),
-      nn.Dropout(p = 0.5),
-      nn.Linear(2048, 1024),
-      nn.BatchNorm1d(1024),
-      nn.ReLU(),
-      nn.Dropout(p = 0.5),
-      nn.Linear(1024, 27)
-
-
-    )
     # Setting up databases constants
     if dataset == "ASL":
       channels,classes,image_size = (3,27,(32,32))
@@ -118,20 +89,22 @@ class CNN_model(nn.Module):
     return x # returns predicted class probabilities for each input
   
 
-def train_model(cnn,train_loader, valid_loader, test_loader, num_epochs = 200,num_iterations_before_validation = 27,weight_decay=0.00001):
+def train_model(cnn,train_loader, valid_loader, test_loader, num_epochs = 200,num_iterations_before_validation = 9,weight_decay=0.00001):
   losses = np.empty(num_epochs)
   start = time.time()
-  text_file = open(r"results\training\losses.txt", "w")
-  text_file.write(f"Attempting {num_epochs} epochs on date of {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+  text_file = open(r"results\training\losses.txt", "w",encoding="utf-8")
+  text_file.write(f"Attempting {num_epochs} epochs on date of {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n with model:")
+  model_stats = summary(cnn, (1, 3, 32, 32), verbose=0)
+  text_file.write(str(model_stats))
   # text_file.write(f"Model Summary: {summary(cnn, (1, 28, 28))}\n")
-  text_file.write(f"{'-'*52}\n")
+  text_file.write('\n')
   text_file.close()
 
   cnn = cnn.to(DEVICE)
 
   # Initializes the Adam optimizer with the model's parameters
   # optimizer = optim.SGD(cnn.parameters(), lr,weight_decay=wd)
-  optimizer = optim.Adam(cnn.parameters(), lr=0.001,weight_decay=0.01)
+  optimizer = optim.Adam(cnn.parameters(), lr=0.001,weight_decay=weight_decay)
   loss = nn.CrossEntropyLoss().to(DEVICE)
   accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=27).to(DEVICE)
   # cnn_models[lr] = cnn
@@ -166,7 +139,7 @@ def train_model(cnn,train_loader, valid_loader, test_loader, num_epochs = 200,nu
       # takes a step in the direction that minimizes the loss
       optimizer.step()
 
-      if iteration % num_iterations_before_validation  == 0 and epoch > (num_epochs/2):
+      if iteration % num_iterations_before_validation == 0 and epoch % 100 == 0:
         with torch.no_grad():
 
           # Keep track of the losses & accuracies
@@ -191,8 +164,12 @@ def train_model(cnn,train_loader, valid_loader, test_loader, num_epochs = 200,nu
           # Store the values in the dictionary
 
           # Print to console
+          text_file = open(r"results\training\losses.txt", "a") 
           print(f"EPOCH = {epoch} --- ITERATION = {iteration}")
+          text_file.write(f"\nEPOCH = {epoch} --- ITERATION = {iteration}\n")
           print(f"Validation loss = {val_loss} --- Validation accuracy = {val_accuracy}")
+          text_file.write(f"Validation loss = {val_loss} --- Validation accuracy = {val_accuracy}\n\n")
+          text_file.close()
       #logging results
     training_loss = train_loss.cpu()
     losses[epoch] = training_loss
@@ -207,7 +184,7 @@ def train_model(cnn,train_loader, valid_loader, test_loader, num_epochs = 200,nu
     
 
   text_file = open(r"results\training\losses.txt", "a") 
-  text_file.write(f"{losses}")
+  text_file.write(f"Losses: \n{losses}")
   text_file.close()
   return losses
 
@@ -216,7 +193,7 @@ if __name__ == "__main__":
   number_of_epochs = 500
   train_loader, valid_loader, test_loader = ld.load_data()
   cnn = CNN_model(numberConvolutionLayers=4,initialKernels=64,numberDense=0,neuronsDLayer=1024,dropout=0.5, dataset="ASL").to(DEVICE)
-  summary(cnn, (3, 32, 32))
+  summary(cnn, (1,3, 32, 32))
   losses = train_model(cnn, train_loader, valid_loader, test_loader,num_epochs=number_of_epochs)
   xh = np.arange(0,number_of_epochs)
   plt.plot(xh, losses, color = 'b', 
