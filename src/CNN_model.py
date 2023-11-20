@@ -188,8 +188,18 @@ def train_model(cnn,train_loader, valid_loader, test_loader, num_epochs = 200,nu
   text_file.close()
   return losses
 
+def to_see_model(path):
+  model=torch.load(path, map_location=DEVICE)
+  text_file = open(r"our_models/model1.txt", "w") 
+  print(model, file=text_file)
+  text_file.close()
+  
 
 if __name__ == "__main__":
+  PATH_TO_MODEL=r"our_models"
+  model_path=PATH_TO_MODEL+r"/model1.pt"
+  to_see_model(model_path)
+  
   number_of_epochs = 500
   train_loader, valid_loader, test_loader = ld.load_data()
   cnn = CNN_model(numberConvolutionLayers=4,initialKernels=64,numberDense=0,neuronsDLayer=1024,dropout=0.5, dataset="ASL").to(DEVICE)
