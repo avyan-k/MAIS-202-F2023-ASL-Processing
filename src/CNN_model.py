@@ -16,9 +16,6 @@ from sklearn.model_selection import GridSearchCV
 from itertools import product
 from torchinfo import summary
 
-
-
-
 DEVICE = ld.load_device()
 
 class CNN_model(nn.Module):
@@ -35,30 +32,31 @@ class CNN_model(nn.Module):
     else:
       raise AttributeError("Unknown dataset", dataset)
     
-    #Convolutional Network
+    # Convolutional Network
     self.convolutional_network = nn.ModuleList() # list that will store the convolutional layers of the model
     kernelsPerLayers = initialKernels
 
     self.convolutional_network.append(nn.Conv2d(in_channels=channels,out_channels=kernelsPerLayers, kernel_size=3,padding="same")) #first convolutional layer
     self.convolutional_network.append(nn.BatchNorm2d(kernelsPerLayers)) #batch normalize the data
     for i in range(numberConvolutionLayers - 1):
-      self.convolutional_network.append(nn.Conv2d(in_channels=kernelsPerLayers,out_channels=kernelsPerLayers*2, kernel_size=3,padding="same")) #add convolution layer
+      self.convolutional_network.append(nn.Conv2d(in_channels=kernelsPerLayers,out_channels=kernelsPerLayers*2, kernel_size=3,padding="same")) # add convolution layer
       kernelsPerLayers *= 2 #double kernels everytime
       self.convolutional_network.append(nn.BatchNorm2d(kernelsPerLayers)) #batch normalize the data
 
 
-    flattened = int((image_size[0] / (2**(numberConvolutionLayers))))**2 * kernelsPerLayers #Flattened Output of Convolutional Layers
+    flattened = int((image_size[0] / (2**(numberConvolutionLayers))))**2 * kernelsPerLayers # Flattened Output of Convolutional Layers
     self.dropout_layer = nn.Dropout(p=dropout) # dropout to reduce model and prevent overfitting
 
-    #Dense Network
+    # Dense Network
     self.dense_network = nn.ModuleList() # list that will store the dense layers of the model
     neurons = neuronsDLayer
 
     self.dense_network.append(nn.Linear(flattened, neurons)) # first dense layer
-    self.dense_network.append(nn.BatchNorm1d(neurons)) #batch normalize the data
+    self.dense_network.append(nn.BatchNorm1d(neurons)) # batch normalize the data
+    
     for i in range(numberDense-1): # one dense layer has already been added
-      self.dense_network.append(nn.Linear(neurons, neurons))
-      self.convolutional_network.append(nn.BatchNorm1d(neurons)) #batch normalize the data
+      self.dense_network.append(nn.Linear(neurons, neurons)) # add dense layer
+      self.convolutional_network.append(nn.BatchNorm1d(neurons)) # batch normalize the data
 
     self.dense_network.append(nn.Linear(neurons, classes)) # classification layer - not counted as part of (hidden)dense network
 
@@ -66,19 +64,19 @@ class CNN_model(nn.Module):
   def forward(self, x):
     
     '''Forward pass function, needs to be defined for every model'''
+    
     for index,convLayer in enumerate(self.convolutional_network):
       x = convLayer(x) # applies a convolution operation to the input
-      if index % 2 == 1: #note that every other layer is batch normalize, we only activate and max pool for convolution
+      if index % 2 == 1: # every other layer is batch normalize, we only activate and max pool for convolution
           x = F.relu(x) # activation function
           x = F.max_pool2d(x, 2) # 2x2 maxpool each convolutional layer except the first one
-
 
     x = torch.flatten(x, start_dim = 1) # Flatten to a 1D vector
     x = self.dropout_layer(x) # dropout on some of the convolution
 
 		# fully connected (dense) layers defined in self.dense_network
     for index, dense_layer in enumerate(self.dense_network):
-      if index == len(self.dense_network) - 1: #dropout on last layer
+      if index == len(self.dense_network) - 1: # dropout on last layer: no ReLU
         x = self.dropout_layer(x)
         x = dense_layer(x)
       else:
@@ -115,7 +113,7 @@ def train_model(cnn,train_loader, valid_loader, test_loader, num_epochs = 200,nu
     # Iterate through the training data
     for iteration, (X_train, y_train) in enumerate(train_loader):
 
-      # print(y_train)
+      # resets all gradients to 0 after each batch
       optimizer.zero_grad()
 
       X_train = X_train.to(DEVICE)
@@ -124,22 +122,22 @@ def train_model(cnn,train_loader, valid_loader, test_loader, num_epochs = 200,nu
       # forward pass of the CNN model on the input data to get predictions
       y_hat = cnn(X_train)
       
-
-
-      optimizer.zero_grad()
-      
       # comparing the model's predictions with the truth labels
       train_loss = loss(y_hat, y_train)
       # if iteration % 9 == 0:
       #   print(f"Epoch: {epoch} Iteration: {iteration} Loss: {train_loss}")
       #   print(f"Predictions:\n{y_hat}")
+      
       # backpropagating the loss through the model
       train_loss.backward()
 
       # takes a step in the direction that minimizes the loss
       optimizer.step()
 
+      # checks if should compute the validation metrics for plotting later
       if iteration % num_iterations_before_validation == 0 and epoch % 100 == 0:
+        
+        # stops computing gradients on the validation set
         with torch.no_grad():
 
           # Keep track of the losses & accuracies
@@ -162,7 +160,6 @@ def train_model(cnn,train_loader, valid_loader, test_loader, num_epochs = 200,nu
           val_loss = (val_loss_sum / len(valid_loader)).cpu()
 
           # Store the values in the dictionary
-
           # Print to console
           text_file = open(r"results\training\losses.txt", "a") 
           print(f"EPOCH = {epoch} --- ITERATION = {iteration}")
@@ -170,7 +167,8 @@ def train_model(cnn,train_loader, valid_loader, test_loader, num_epochs = 200,nu
           print(f"Validation loss = {val_loss} --- Validation accuracy = {val_accuracy}")
           text_file.write(f"Validation loss = {val_loss} --- Validation accuracy = {val_accuracy}\n\n")
           text_file.close()
-      #logging results
+          
+    # logging results
     training_loss = train_loss.cpu()
     losses[epoch] = training_loss
     print(f"\n\nloss: {training_loss.item()} epoch: {epoch}")
@@ -181,14 +179,13 @@ def train_model(cnn,train_loader, valid_loader, test_loader, num_epochs = 200,nu
     text_file.write(f"It has now been {current} since the beginning of the program\n")
     text_file.close()
 
-    
-
   text_file = open(r"results\training\losses.txt", "a") 
   text_file.write(f"Losses: \n{losses}")
   text_file.close()
   return losses
 
 def to_see_model(path):
+  
   model=torch.load(path, map_location=DEVICE)
   text_file = open(r"our_models/model1.txt", "w") 
   print(model, file=text_file)
@@ -196,9 +193,10 @@ def to_see_model(path):
   
 
 if __name__ == "__main__":
+  
   PATH_TO_MODEL=r"our_models"
   model_path=PATH_TO_MODEL+r"/model1.pt"
-  to_see_model(model_path)
+  # to_see_model(model_path)
   
   number_of_epochs = 500
   train_loader, valid_loader, test_loader = ld.load_data()
@@ -206,8 +204,8 @@ if __name__ == "__main__":
   summary(cnn, (1,3, 32, 32))
   losses = train_model(cnn, train_loader, valid_loader, test_loader,num_epochs=number_of_epochs)
   xh = np.arange(0,number_of_epochs)
-  plt.plot(xh, losses, color = 'b', 
-         marker = ',',label = "Loss") 
+  
+  plt.plot(xh, losses, color = 'b', marker = ',',label = "Loss") 
   plt.xlabel("Epochs Traversed")
   plt.ylabel("Training Loss")
   plt.grid() 
