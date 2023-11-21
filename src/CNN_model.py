@@ -15,6 +15,7 @@ from datetime import datetime
 from sklearn.model_selection import GridSearchCV
 from itertools import product
 from torchinfo import summary
+import os
 
 DEVICE = ld.load_device()
 
@@ -202,11 +203,13 @@ def to_see_model(path):
   text_file.close()
   
 def test(cnn, test_loader):
-
+  
   testing_accuracy_sum = 0
   accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=27).to(DEVICE)
-
+  cnn = cnn.to(DEVICE)
   for (X_test, y_test) in test_loader:
+    X_test = X_test.to(DEVICE)
+    y_test = y_test.to(DEVICE)
     test_predictions = cnn(X_test)
     testing_accuracy_sum += accuracy(test_predictions, y_test)
     
@@ -217,22 +220,18 @@ def test(cnn, test_loader):
 
 
 if __name__ == "__main__":
-
-  PATH_TO_MODEL=r"our_models"
-  model_path=PATH_TO_MODEL+r"/model1.pt"
-  # to_see_model(model_path)
-  
   number_of_epochs = 500
   train_loader, valid_loader, test_loader = ld.load_data()
-
-  cnn = CNN_model(numberConvolutionLayers=4,initialKernels=64,numberDense=0,neuronsDLayer=1024,dropout=0.5, dataset="ASL").to(DEVICE)
-  cnn.load_state_dict(torch.load(model_path, map_location = torch.device('cpu')))
-  cnn.to(ld.load_device())
-  print(test(cnn, test_loader))
-
-
-  summary(cnn, (1,3, 32, 32))
-
+  test_dict = {}
+  for filename in os.listdir("our_models"):
+    model_path = os.path.join("our_models", filename)
+    if os.path.isfile(model_path) and model_path.endswith('.pt'):
+      cnn = CNN_model(numberConvolutionLayers=4,initialKernels=64,numberDense=0,neuronsDLayer=1024,dropout=0.5, dataset="ASL").to(DEVICE)
+      cnn.load_state_dict(torch.load(model_path, map_location = DEVICE))
+      print(test(cnn, test_loader))
+      test_dict[model_path] = test(cnn, test_loader)
+  print(max(test_dict, key=test_dict.get))
+  
   #losses = train_model(cnn, train_loader, valid_loader, test_loader,num_epochs=number_of_epochs)
 
   # to plot the losses
