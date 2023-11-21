@@ -79,10 +79,14 @@ def predict_image(save_dir,frame,i,cnn):
 
     # Then open saved image with Image
     path = os.path.join(save_dir, f"image_{i}.png")
+    
     # path = os.path.join(r"images/E.png")
     img = Image.open(path)
-
+    
+    # resized_img=img.resize((32,32))
+    # resized_img.save(path)
     # Apply transformations
+    
     transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Resize(32),  # Resize to 32x32
@@ -103,38 +107,6 @@ def predict_image(save_dir,frame,i,cnn):
     print(f"Image {i + 1} captured and saved as {image_filename}")
     print(f"Predicted class: {predicted_class.item()}")
     print(f"Predicted letter: {ALPHABET[predicted_class.item()]}")
-    
-    # # Preprocessing transformation
-    # transform = transforms.Compose([
-    #     transforms.ToTensor(),                            
-    #     transforms.Resize(32),
-    # ])
-    
-    # # Save the image with a unique filename
-    # image_filename = os.path.join(save_dir, f"image_{i}.png")
-    # cv2.imwrite(image_filename, frame)
-    
-    # # Then open saved image with Image
-    # path = os.path.join(save_dir, f"image_{i}.png")
-    # img = Image.open(path)
-
-    # # resized_img = transform(img)
-    # # resized_img.save(path)
-    
-    # img_tensor = transforms.ToTensor(img)
-    # img_tensor = img_tensor.unsqueeze(0)
-    # cnn.eval()
-    # # Make predictions using the CNN model
-    # #with torch.no_grad():
-    # output = cnn(img_tensor.to(DEVICE))
-        
-    # # Get the predicted class
-    # print(output)
-    # _, predicted_class = torch.max(output, 1)
-
-    # print(f"Image {i + 1} captured and saved as {image_filename}")
-    # print(f"Predicted class: {predicted_class.item()}")
-    # print(ALPHABET[predicted_class.item()])
     
     
     
