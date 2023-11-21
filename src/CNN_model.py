@@ -87,7 +87,7 @@ class CNN_model(nn.Module):
     return x # returns predicted class probabilities for each input
   
 
-def train_model(cnn,train_loader, valid_loader, test_loader, num_epochs = 200,num_iterations_before_validation = 9,weight_decay=0.00001):
+def train_model(cnn,train_loader, num_epochs = 200,num_iterations_before_validation = 9,weight_decay=0.00001):
   losses = np.empty(num_epochs)
   start = time.time()
   text_file = open(r"results\training\losses.txt", "w",encoding="utf-8")
@@ -135,7 +135,19 @@ def train_model(cnn,train_loader, valid_loader, test_loader, num_epochs = 200,nu
       optimizer.step()
 
       # checks if should compute the validation metrics for plotting later
-      if iteration % num_iterations_before_validation == 0 and epoch % 100 == 0:
+      valid_model(num_iterations_before_validation,epoch,iteration,accuracy,loss)
+
+    # logging results
+    logging_result(train_loss,epoch,start,losses)
+
+  text_file = open(r"results\training\losses.txt", "a") 
+  text_file.write(f"Losses: \n{losses}")
+  text_file.close()
+  return losses
+
+def valid_model(num_iterations_before_validation,epoch,iteration,accuracy,loss):
+  
+  if iteration % num_iterations_before_validation == 0 and epoch % 100 == 0:
         
         # stops computing gradients on the validation set
         with torch.no_grad():
@@ -167,23 +179,20 @@ def train_model(cnn,train_loader, valid_loader, test_loader, num_epochs = 200,nu
           print(f"Validation loss = {val_loss} --- Validation accuracy = {val_accuracy}")
           text_file.write(f"Validation loss = {val_loss} --- Validation accuracy = {val_accuracy}\n\n")
           text_file.close()
-          
-    # logging results
-    training_loss = train_loss.cpu()
-    losses[epoch] = training_loss
-    print(f"\n\nloss: {training_loss.item()} epoch: {epoch}")
-    print("It has now been "+ time.strftime("%Mm%Ss", time.gmtime(time.time() - start))  +"  since the beginning of the program")
-    text_file = open(r"results\training\losses.txt", "a")  
-    text_file.write(f"loss: {training_loss.item()} epoch: {epoch}\n")
-    current =  time.strftime("%Hh%Mm%Ss", time.gmtime(time.time() - start))
-    text_file.write(f"It has now been {current} since the beginning of the program\n")
-    text_file.close()
 
-  text_file = open(r"results\training\losses.txt", "a") 
-  text_file.write(f"Losses: \n{losses}")
+def logging_result(loss,epoch,start,losses):
+  
+  training_loss = loss.cpu()
+  losses[epoch] = training_loss
+  print(f"\n\nloss: {training_loss.item()} epoch: {epoch}")
+  print("It has now been "+ time.strftime("%Mm%Ss", time.gmtime(time.time() - start))  +"  since the beginning of the program")
+  text_file = open(r"results\training\losses.txt", "a")  
+  text_file.write(f"loss: {training_loss.item()} epoch: {epoch}\n")
+  current =  time.strftime("%Hh%Mm%Ss", time.gmtime(time.time() - start))
+  text_file.write(f"It has now been {current} since the beginning of the program\n")
   text_file.close()
-  return losses
-
+  
+  
 def to_see_model(path):
   
   model=torch.load(path, map_location=DEVICE)
@@ -202,7 +211,7 @@ if __name__ == "__main__":
   train_loader, valid_loader, test_loader = ld.load_data()
   cnn = CNN_model(numberConvolutionLayers=4,initialKernels=64,numberDense=0,neuronsDLayer=1024,dropout=0.5, dataset="ASL").to(DEVICE)
   summary(cnn, (1,3, 32, 32))
-  losses = train_model(cnn, train_loader, valid_loader, test_loader,num_epochs=number_of_epochs)
+  losses = train_model(cnn, train_loader,num_epochs=number_of_epochs)
   xh = np.arange(0,number_of_epochs)
   
   plt.plot(xh, losses, color = 'b', marker = ',',label = "Loss") 
