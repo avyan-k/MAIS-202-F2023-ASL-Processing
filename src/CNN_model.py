@@ -20,7 +20,7 @@ DEVICE = ld.load_device()
 
 class CNN_model(nn.Module):
 
-  def __init__(self,numberConvolutionLayers=3,initialKernels=5,numberDense = 0,neuronsDLayer=0,dropout=0.5,dataset = "ASL"):
+  def __init__(self,numberConvolutionLayers=4,initialKernels=64,numberDense = 0,neuronsDLayer=0,dropout=0.5,dataset = "ASL"):
     
     super(CNN_model, self).__init__() # calls the constructor of the parent class (nn.Module) to properly initialize the model
 
@@ -56,7 +56,7 @@ class CNN_model(nn.Module):
     
     for i in range(numberDense-1): # one dense layer has already been added
       self.dense_network.append(nn.Linear(neurons, neurons)) # add dense layer
-      self.convolutional_network.append(nn.BatchNorm1d(neurons)) # batch normalize the data
+      self.dense_network.append(nn.BatchNorm1d(neurons)) # batch normalize the data
 
     self.dense_network.append(nn.Linear(neurons, classes)) # classification layer - not counted as part of (hidden)dense network
 
@@ -87,7 +87,8 @@ class CNN_model(nn.Module):
     return x # returns predicted class probabilities for each input
   
 
-def train_model(cnn,train_loader, num_epochs = 200,num_iterations_before_validation = 9,weight_decay=0.00001):
+def train_model(cnn,train_loader, num_epochs = 200,num_iterations_before_validation = 810,weight_decay=0.00001):
+  
   losses = np.empty(num_epochs)
   start = time.time()
   text_file = open(r"results\training\losses.txt", "w",encoding="utf-8")
@@ -147,7 +148,7 @@ def train_model(cnn,train_loader, num_epochs = 200,num_iterations_before_validat
 
 def valid_model(num_iterations_before_validation,epoch,iteration,accuracy,loss):
   
-  if iteration % num_iterations_before_validation == 0 and epoch % 100 == 0:
+  if iteration % num_iterations_before_validation == 0 and epoch % 10 == 0:
         
         # stops computing gradients on the validation set
         with torch.no_grad():
@@ -219,7 +220,7 @@ if __name__ == "__main__":
 
   PATH_TO_MODEL=r"our_models"
   model_path=PATH_TO_MODEL+r"/model1.pt"
-  to_see_model(model_path)
+  # to_see_model(model_path)
   
   number_of_epochs = 500
   train_loader, valid_loader, test_loader = ld.load_data()
@@ -234,7 +235,7 @@ if __name__ == "__main__":
 
   #losses = train_model(cnn, train_loader, valid_loader, test_loader,num_epochs=number_of_epochs)
 
-  #to plot the losses
+  # to plot the losses
   # xh = np.arange(0,number_of_epochs)
   # plt.plot(xh, losses, color = 'b', 
   #        marker = ',',label = "Loss") 

@@ -52,24 +52,22 @@ def load_data():
     # means = [0.4916, 0.4699, 0.4255] # after hyper para tuning gives very intense pics
     # standard_deviations = [0.0251, 0.0265, 0.0278]
     
-    train_means = [0.4904, 0.4686, 0.4246] # gives descent pics but pick black for dark background with dark skin tones
-    train_standard_deviations = [0.2473, 0.2526, 0.2713]
+    # train_means = [0.4904, 0.4686, 0.4246] # gives descent pics but pick black for dark background with dark skin tones
+    # train_standard_deviations = [0.2473, 0.2526, 0.2713]
 
-    test_means = [0.4904, 0.4686, 0.4246]
-
-    test_standard_deviations = [0.2473, 0.2526, 0.2713]
+    # test_means = [0.4904, 0.4686, 0.4246]
+    # test_standard_deviations = [0.2473, 0.2526, 0.2713]
     
     # Define the transformations, including normalization
     train_processing_transforms = transforms.Compose([
         transforms.ToTensor(),  # Convert PIL Image to tensor
         # transforms.Grayscale(num_output_channels=3),
-        transforms.Resize((32,32)),
+        transforms.Resize(32),
         
     ])
     test_processing_transforms = transforms.Compose([
         transforms.ToTensor(),                             # Convert PIL Image to tensor
-        transforms.Normalize(test_means, test_standard_deviations),   # Normalize the image
-        transforms.Resize((32,32),antialias=True),
+        transforms.Resize(32),
     ])
     
     full_train_dataset = datasets.ImageFolder(train_data_path,transform=train_processing_transforms)
