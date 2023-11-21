@@ -200,23 +200,46 @@ def to_see_model(path):
   print(model, file=text_file)
   text_file.close()
   
+def test(cnn, test_loader):
+
+  testing_accuracy_sum = 0
+  accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=27).to(DEVICE)
+
+  for (X_test, y_test) in test_loader:
+    test_predictions = cnn(X_test)
+    testing_accuracy_sum += accuracy(test_predictions, y_test)
+    
+  
+  test_accuracy = testing_accuracy_sum / len(test_loader)
+  
+  return test_accuracy
+
 
 if __name__ == "__main__":
-  
+
   PATH_TO_MODEL=r"our_models"
   model_path=PATH_TO_MODEL+r"/model1.pt"
-  # to_see_model(model_path)
+  to_see_model(model_path)
   
   number_of_epochs = 500
   train_loader, valid_loader, test_loader = ld.load_data()
+
   cnn = CNN_model(numberConvolutionLayers=4,initialKernels=64,numberDense=0,neuronsDLayer=1024,dropout=0.5, dataset="ASL").to(DEVICE)
+  cnn.load_state_dict(torch.load(model_path, map_location = torch.device('cpu')))
+  cnn.to(ld.load_device())
+  print(test(cnn, test_loader))
+
+
   summary(cnn, (1,3, 32, 32))
-  losses = train_model(cnn, train_loader,num_epochs=number_of_epochs)
-  xh = np.arange(0,number_of_epochs)
-  
-  plt.plot(xh, losses, color = 'b', marker = ',',label = "Loss") 
-  plt.xlabel("Epochs Traversed")
-  plt.ylabel("Training Loss")
-  plt.grid() 
-  plt.legend() 
-  plt.show()
+
+  #losses = train_model(cnn, train_loader, valid_loader, test_loader,num_epochs=number_of_epochs)
+
+  #to plot the losses
+  # xh = np.arange(0,number_of_epochs)
+  # plt.plot(xh, losses, color = 'b', 
+  #        marker = ',',label = "Loss") 
+  # plt.xlabel("Epochs Traversed")
+  # plt.ylabel("Training Loss")
+  # plt.grid() 
+  # plt.legend() 
+  # plt.show()

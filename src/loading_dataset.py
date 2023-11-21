@@ -69,6 +69,7 @@ def load_data():
     test_processing_transforms = transforms.Compose([
         transforms.ToTensor(),                             # Convert PIL Image to tensor
         transforms.Normalize(test_means, test_standard_deviations),   # Normalize the image
+        transforms.Resize((32,32),antialias=True),
     ])
     
     full_train_dataset = datasets.ImageFolder(train_data_path,transform=train_processing_transforms)
