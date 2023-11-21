@@ -10,24 +10,40 @@ import torchvision.transforms as transforms
 import torch.optim as optim
 from tqdm import tqdm
 import torchmetrics
-import loading_dataset as ld
-import CNN_model
 import os
 from torch.utils.data import DataLoader, random_split
 import opendatasets as od
 
+PATH_TO_DATA = r"synthetic-asl-alphabet"
+test_data_path = PATH_TO_DATA + r"/Test_Alphabet"
+train_data_path = PATH_TO_DATA + r"/Train_Alphabet"
+TRAIN_SET_SIZE = 24300
+TESTING_SET_SIZE = 2700
 
 def get_and_split_dataset():
     
     # Loading The Dataset
-    full_train_dataset = datasets.ImageFolder(ld.train_data_path,transforms.ToTensor())
-    test_dataset = datasets.ImageFolder(ld.test_data_path,transforms.ToTensor())
+    full_train_dataset = datasets.ImageFolder(train_data_path,transforms.ToTensor())
+    test_dataset = datasets.ImageFolder(test_data_path,transforms.ToTensor())
     
     # Split the datasets into training, validation, and test sets
-    train_dataset, valid_dataset, _ = random_split(full_train_dataset, [int(ld.TRAIN_SET_SIZE*0.75), int(ld.TRAIN_SET_SIZE*0.25),0])
-    test_dataset, _ , _ = random_split(test_dataset, [ld.TESTING_SET_SIZE, len(test_dataset) - ld.TESTING_SET_SIZE, 0])
+    train_dataset, valid_dataset, _ = random_split(full_train_dataset, [int(TRAIN_SET_SIZE*0.01), int(TRAIN_SET_SIZE*0.99),0])
+    test_dataset, _ , _ = random_split(test_dataset, [TESTING_SET_SIZE, len(test_dataset) - TESTING_SET_SIZE, 0])
     
     return train_dataset,valid_dataset,test_dataset
+
+def find_mean_stds(train_dataset):
+
+    # Create a stack for all images
+    train_stack = torch.stack([img_t for img_t, _ in train_dataset], dim=3)
+    train_means = train_stack.view(3, -1).mean(dim=1)
+    train_stds = train_stack.view(3, -1).std(dim=1)
+    return train_means,train_stds
+
+
+    
+
+
 
 def tune_mean_std(train_dataset,valid_dataset,test_dataset):
 
@@ -62,7 +78,7 @@ def tune_mean_std(train_dataset,valid_dataset,test_dataset):
     return means_stds
 
 if __name__ == "__main__":
-    
-    # train_dataset,valid_dataset,test_dataset = get_and_split_dataset()
-    # means_stds = tune_mean_std(train_dataset,valid_dataset,test_dataset)
+    train_dataset,valid_dataset,test_dataset = get_and_split_dataset()
+    means_stds = find_mean_stds(train_dataset)
+    print(means_stds)
     

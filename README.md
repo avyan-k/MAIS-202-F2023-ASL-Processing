@@ -31,12 +31,12 @@ After approximating the best weight from it we get:
 # Hyperparameters Summary
 | Hyperparameters         | Explanation                                              | Computed Result                                     |
 |-------------------------|----------------------------------------------------------|-----------------------------------------------------|
-| Learning Rate           | Pace the model learns the values of a parameter estimate | {0.01,0.001}                                        |
-| Weight Regularization   | Mean and standard deviation for normalizing the dataset  | [[ 0.4916,0.4697,0.4251 ],[ 0.1584,0.1648,0.1768 ]] |
-| Convolutional Layers    | Number of convolutional layers in network                |                                                     |
-| Initial Output Channels | Number of kernel in the initial convolutional layer      |                                                     |
+| Learning Rate           | Pace the model learns the values of a parameter estimate | 0.001                                               |
+| Weight Decay            | To penalizes large weights in the network                | 0.00001                                             |
+| Convolutional Layers    | Number of convolutional layers in network                | 4                                                   |
+| Initial Output Channels | Number of kernel in the initial convolutional layer      | 64                                                  |
 | Dense Layers            | Number of linear layers after convolution                |                                                     |
-| Neurons per Layers      | Number of neurons per dense layers                       |                                                     |
-| Dropout                 | Number of neurons we leave out per dense layers          |                                                     |
+| Neurons per Layers      | Number of neurons per dense layers                       | 1024                                                |
+| Dropout                 | Number of neurons we leave out per dense layers          | 0.5                                                 |
 
 
