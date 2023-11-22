@@ -9,13 +9,13 @@ import torch
 import torch.nn.functional as F
 
 ALPHABET = ['A', 'B', ' ', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
-
 DEVICE = ld.load_device()
 
 def load_cnn_model():
     
     # Load your CNN model here
     model = CNN_model(numberConvolutionLayers=4,initialKernels=64,numberDense=0,neuronsDLayer=1024,dropout=0.5, dataset="ASL").to(DEVICE)
+    
     # Load the pretrained weights if available
     model.load_state_dict(torch.load(r"our_models/model1.pt",map_location = DEVICE))
     model.eval()
@@ -79,13 +79,12 @@ def predict_image(save_dir,frame,i,cnn):
     cv2.imwrite(image_filename, frame)
 
     # To test on user input image
-    # path = os.path.join(save_dir, f"image_{i}.png")
+    path = os.path.join(save_dir, f"image_{i}.png")
     
     # to test on dataset
-    path = os.path.join(r"images/O.png")
+    # path = os.path.join(r"images/O.png")
 
     img = Image.open(path)
-
 
     # resized_img = img.resize((32,32))
     # resized_img.save(path)
@@ -115,7 +114,6 @@ def predict_image(save_dir,frame,i,cnn):
     print(f"Image {i + 1} captured and saved as {image_filename}")
     print(f"Predicted class: {predicted_class.item()}")
     print(f"Predicted letter: {ALPHABET[predicted_class.item()]}")
-    
     
     
 if __name__ == "__main__":
