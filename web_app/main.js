@@ -5,6 +5,7 @@ const snapButton = document.getElementById('snapButton');
 const canvas = document.getElementById('canvas');
 const capturedImage = document.getElementById('capturedImage');
 const stopButton = document.getElementById('stopButton');
+const generatedText = document.getElementById('translated')
 
 let stream;
 
@@ -20,13 +21,21 @@ startButton.addEventListener('click', async () => {
     }
 });
 
-// Take Picture and display Snapped Image
-snapButton.addEventListener('click', () => {
+// Take Picture and download Snapped Image
+snapButton.addEventListener('click', function () {
+    // Draw the current video frame onto the canvas
     const context = canvas.getContext('2d');
     context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-    capturedImage.src = canvas.toDataURL('image/png');
-    capturedImage.style.display = 'block';
-});
+
+    // Convert the canvas content to a data URL and trigger download
+    const dataURL = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.href = dataURL;
+    link.download = 'captured_image.png';
+    link.click();
+    // Generate Text
+    generatedText.innerHTML = "A"
+  });
 
 // Display Error if failed (Generated from Chat GPT)
 async function startWebcam() {
