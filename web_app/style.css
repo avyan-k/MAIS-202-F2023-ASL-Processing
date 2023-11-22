@@ -54,3 +54,8 @@ main {
     text-align: center;
     padding: 20px;
 }
+
+.steps li {
+    font-family: Arial, sans-serif;
+    color: white;
+}
