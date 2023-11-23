@@ -19,67 +19,21 @@ def download_data():
     if not os.path.exists(r"synthetic-asl-alphabet"):
         od.download("https://www.kaggle.com/datasets/lexset/synthetic-asl-alphabet/data")
 
-def load_data_mnist():
-    # Transform the data to torch tensors and normalize it
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.1307,), (0.3081,)) # Mean and standard deviation of the dataset to use for normalization
-    ])
-
-    # Preparing the training, validation, and test sets
-    train_and_val_sets = torchvision.datasets.MNIST('mnist', train=True, download=True, transform=transform) # Will be split into training and validation for hyperparameter tuning
-    train_set, val_set,_ = torch.utils.data.random_split(train_and_val_sets, [5000, 1000,54000]) # 55000 training examples, 5000 validation examples
-    test_set = torchvision.datasets.MNIST('mnist', train=False, download=True, transform=transform)
-
-    # Prepare loaders which will give us the data batch by batch (Here, batch size is 8)
-    train_loader = torch.utils.data.DataLoader(train_set, batch_size=8, shuffle=True)
-    val_loader = torch.utils.data.DataLoader(val_set, batch_size=8, shuffle=True)
-    test_loader = torch.utils.data.DataLoader(test_set, batch_size=8, shuffle=True)
-
-    # Print the size of each of the datasets
-    return train_loader, val_loader, test_loader
 
 def load_data():
-
-    # Data Normalization
-    
-    # means = [0.4916,0.4697,0.4251] # tracy's bad calculations, can probably discare
-    # standard_deviations = [0.1584,0.1648,0.1768]
-    
-    # means = [0.5,0.5,0.5]
-    # standard_deviations = [0.5,0.5,0.5]
-    
-    # means = [0.4916, 0.4699, 0.4255] # after hyper para tuning gives very intense pics
-    # standard_deviations = [0.0251, 0.0265, 0.0278]
-    
-    # train_means = [0.4904, 0.4686, 0.4246] # gives descent pics but pick black for dark background with dark skin tones
-    # train_standard_deviations = [0.2473, 0.2526, 0.2713]
-
-    # test_means = [0.4904, 0.4686, 0.4246]
-    # test_standard_deviations = [0.2473, 0.2526, 0.2713]
     
     # Define the transformations, including normalization
-    train_processing_transforms = transforms.Compose([
+    processing_transforms = transforms.Compose([
         transforms.ToTensor(),  # Convert PIL Image to tensor
-        # transforms.Grayscale(num_output_channels=3),
-        transforms.Resize(32),
-        
-    ])
-    test_processing_transforms = transforms.Compose([
-        transforms.ToTensor(),                             # Convert PIL Image to tensor
-        transforms.Resize(32),
+        transforms.Resize(32,antialias=True),  # Resizing and smoothing out the images
     ])
     
-    full_train_dataset = datasets.ImageFolder(train_data_path,transform=train_processing_transforms)
-    test_dataset = datasets.ImageFolder(test_data_path,transform=test_processing_transforms)
-
+    # Apply Transformation and Loading Dataset
+    full_train_dataset = datasets.ImageFolder(train_data_path,transform=processing_transforms)
+    test_dataset = datasets.ImageFolder(test_data_path,transform=processing_transforms)
     
-    # # Loading The Dataset
-    # full_train_dataset = datasets.ImageFolder(train_data_path, transform=transforms.Compose(processing_transforms))
-    # test_dataset = datasets.ImageFolder(test_data_path, transform=transforms.Compose(processing_transforms))
-    
-    # Split the datasets into training, validation, and test sets
-    train_dataset, valid_dataset, _ = random_split(full_train_dataset, [int(TRAIN_SET_SIZE*0.01), int(TRAIN_SET_SIZE*0.01),int(TRAIN_SET_SIZE*0.98)])
+    # Split the datasets into training, validation, and testing sets
+    train_dataset, valid_dataset, _ = random_split(full_train_dataset, [int(TRAIN_SET_SIZE*0.8), int(TRAIN_SET_SIZE*0.2),0])
     test_dataset, _, _ = random_split(test_dataset, [TESTING_SET_SIZE, len(test_dataset) - TESTING_SET_SIZE, 0])
     
 
