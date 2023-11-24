@@ -19,6 +19,7 @@ def load_cnn_model():
     # Load the pretrained weights if available
     model.load_state_dict(torch.load(r"our_models/model1.pt",map_location = DEVICE))
     model.eval()
+    
     return model
 
 def capture_images():
@@ -85,9 +86,6 @@ def predict_image(save_dir,frame,i,cnn):
     # path = os.path.join(r"images/O.png")
 
     img = Image.open(path)
-
-    # resized_img = img.resize((32,32))
-    # resized_img.save(path)
     
     # Transformations
     transform = transforms.Compose([
@@ -100,7 +98,7 @@ def predict_image(save_dir,frame,i,cnn):
     img_tensor = img_tensor.unsqueeze(0)  # Add batch dimension
 
     # Make predictions using the CNN model
-    # cnn.eval() 
+    cnn.eval() 
      
     # with torch.no_grad():
     output = cnn(img_tensor.to(DEVICE))

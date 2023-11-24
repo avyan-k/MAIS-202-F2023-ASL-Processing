@@ -24,7 +24,7 @@ def load_data():
     
     # Define the transformations, including normalization
     processing_transforms = transforms.Compose([
-        transforms.ToTensor(),  # Convert PIL Image to tensor
+        transforms.ToTensor(),                 # Convert Image to tensor
         transforms.Resize(32,antialias=True),  # Resizing and smoothing out the images
     ])
     
@@ -51,28 +51,30 @@ def load_data():
 def load_device():
     
     # if a macOs then use mps
-    if torch.backends.mps.is_built():
-        device = torch.device("mps")
+    if torch.backends.mps.is_built(): device = torch.device("mps")
+    
     # elif a GPU is available, use it
-    elif torch.cuda.is_available(): 
-        device = torch.device("cuda")
+    elif torch.cuda.is_available(): device = torch.device("cuda")
+    
     # Else, revert to the default (CPU)
-    else: 
-        device = torch.device("cpu")
+    else: device = torch.device("cpu")
         
     return device
+
+def show_images(loader):
+    counter=0
+    for images, labels in loader:
+        if counter == 5 : break
+        plt.imshow(images[counter].permute(1, 2, 0))
+        plt.title(f"Label: {labels[0]}")
+        plt.show()
+        counter+=1
 
 if __name__ == "__main__":
     
     download_data()
     train_loader, valid_loader, test_loader = load_data()
-    counter=0
+    show_images(train_loader)
     
-    for images, labels in train_loader:
-        if counter == 5 : break
-        # print(images[counter])
-        plt.imshow(images[counter].permute(1, 2, 0))
-        plt.title(f"Label: {labels[0]}")
-        plt.show()
-        counter+=1
+    
     

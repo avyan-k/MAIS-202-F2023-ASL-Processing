@@ -26,3 +26,28 @@
 
 #     # Print the size of each of the datasets
 #     return train_loader, val_loader, test_loader
+
+    
+    # # Setting up databases constants
+    # if dataset == "ASL":
+    #   channels,classes,image_size = (3,27,(32,32))
+    # elif dataset == "MNIST":
+    #   channels,classes,image_size = (1,10,(28,28))
+    # else:
+    #   raise AttributeError("Unknown dataset", dataset)
+    
+    
+    # out_channels = initialKernels
+    # in_channels = channels
+    # self.convolutional_network.append(nn.Conv2d(in_channels=channels,out_channels=out_channels, kernel_size=3,padding="same")) # first convolutional layer
+    # self.convolutional_network.append(nn.BatchNorm2d(out_channels)) # batch normalize the data
+    
+    #  for i in range(numberConvolutionLayers-1):
+    #   print(f"{in_channels}")
+    #   # Add convolution layer
+    #   self.convolutional_network.append(nn.Conv2d(in_channels=in_channels,out_channels=out_channels, kernel_size=3, padding="same"))
+    #   self.convolutional_network.append(nn.BatchNorm2d(out_channels)) # batch normalize the data
+    #   in_channels = out_channels
+    #   out_channels *=2
+      
+    #   print(f"{out_channels}")

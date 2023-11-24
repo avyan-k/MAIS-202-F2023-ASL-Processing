@@ -16,11 +16,11 @@
 
     - Changing 3 to 64 kernel in the initial convolutional layer
 
-    - Changing 3 to ... dense layers
-
     - Changing 8 to 1024 neurons per dense layers
 
     - Changing 3 to 4 convolutional layers in network  
+
+    - Changing 100 to 8 batch size
 
 # Current Status:
 
@@ -32,6 +32,17 @@
 
 # Model doesn't work on images taken from a webcam:
 
-## Solution: Domain Adaptation with the CORAL method
+## Solution 1: Domain Adaptation with the CORAL method
+
+- Would need a unlabeled dataset of size of about 1500 images taken by the webcam (target domain)
+- We want to predict the unlabeled data (target domain) with our labeled kaggle dataset (source domain)
+- Add a lost function (correlation alignment) at the last CNN layer
+
+## Solution 2: Train Model on Only Hand Guesture
+
+- Would need to process and create the hand gesture posture data of the currently used dataset
+- Train on that data instead
+- Use hand recognition when using webcam
+- Captures hand guesture posture
 
 

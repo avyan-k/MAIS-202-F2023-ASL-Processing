@@ -9,6 +9,7 @@ Basic Sign Language Translator that interprets ASL language using Machine Learni
  * Written in Python Version 3, using PyTorch
  
 # Requirements
+
  Use Python Version 3  and install the following packages (tentative list):
 * [PyTorch](https://pytorch.org/) and utilities, including torchvision
 * [opendatasets](https://pypi.org/project/opendatasets)
@@ -21,6 +22,7 @@ Run [pytorch_version.py](https://github.com/avyan-k/MAIS-202-F2023-ASL-Processin
 With `get_and_split_dataset()` in `hyperpara_tuning.py` we split the dataset into training set (72%) validation set (18%) and testing set (10%)
 
 # Hyperparameters Summary
+
 | Hyperparameters         | Explanation                                              | Computed Result                                     |
 |-------------------------|----------------------------------------------------------|-----------------------------------------------------|
 | Learning Rate           | Pace the model learns the values of a parameter estimate | 0.001                                               |
@@ -30,4 +32,3 @@ With `get_and_split_dataset()` in `hyperpara_tuning.py` we split the dataset int
 | Dense Layers            | Number of linear layers after convolution                | 3                                                   |
 | Neurons per Layers      | Number of neurons per dense layers                       | 1024                                                |
 | Dropout                 | Number of neurons we leave out per dense layers          | 0.5                                                 |
-
