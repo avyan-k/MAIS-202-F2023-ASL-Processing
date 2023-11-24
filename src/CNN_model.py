@@ -90,7 +90,7 @@ class CNN_model(nn.Module):
     return x # returns predicted class probabilities for each input
   
 
-def train_model(cnn,train_loader, num_epochs = 200,num_iterations_before_validation = 810,weight_decay=0.00001):
+def train_model(cnn,train_loader,valid_loader, num_epochs = 200,num_iterations_before_validation = 810,weight_decay=0.001):
   
   losses = np.empty(num_epochs)
   start = time.time()
@@ -133,7 +133,8 @@ def train_model(cnn,train_loader, num_epochs = 200,num_iterations_before_validat
       optimizer.step()
 
       # checks if should compute the validation metrics for plotting later
-      valid_model(num_iterations_before_validation,epoch,iteration,accuracy,loss)
+      if iteration % num_iterations_before_validation == 0 and epoch % 10 == 0:
+        valid_model(cnn,valid_loader,epoch,iteration,accuracy,loss)
 
     # logging results
     logging_result(train_loss,epoch,start,losses)
@@ -143,39 +144,42 @@ def train_model(cnn,train_loader, num_epochs = 200,num_iterations_before_validat
   text_file.close()
   return losses
 
-def valid_model(num_iterations_before_validation,epoch,iteration,accuracy,loss):
+def valid_model(cnn,valid_loader,epoch,iteration,accuracy,loss):
   
-  if iteration % num_iterations_before_validation == 0 and epoch % 10 == 0:
+
         
-        # stops computing gradients on the validation set
-        with torch.no_grad():
+      # stops computing gradients on the validation set
+      with torch.no_grad():
 
-          # Keep track of the losses & accuracies
-          val_accuracy_sum = 0
-          val_loss_sum = 0
+        # Keep track of the losses & accuracies
+        val_accuracy_sum = 0
+        val_loss_sum = 0
 
-          # Make a predictions on the full validation set, batch by batch
-          for X_val, y_val in valid_loader:
+        # Make a predictions on the full validation set, batch by batch
+        for X_val, y_val in valid_loader:
 
-            # Move the batch to GPU if it's available
-            X_val = X_val.to(DEVICE)
-            y_val = y_val.to(DEVICE)
+          # Move the batch to GPU if it's available
+          X_val = X_val.to(DEVICE)
+          y_val = y_val.to(DEVICE)
 
-            y_hat = cnn(X_val)
-            val_accuracy_sum += accuracy(y_hat, y_val)
-            val_loss_sum += loss(y_hat, y_val)
+          y_hat = cnn(X_val)
+          val_accuracy_sum += accuracy(y_hat, y_val)
+          val_loss_sum += loss(y_hat, y_val)
 
-          # Divide by the number of iterations (and move back to CPU)
-          val_accuracy = (val_accuracy_sum / len(valid_loader)).cpu()
-          val_loss = (val_loss_sum / len(valid_loader)).cpu()
+        # Divide by the number of iterations (and move back to CPU)
+        val_accuracy = (val_accuracy_sum / len(valid_loader)).cpu()
+        val_loss = (val_loss_sum / len(valid_loader)).cpu()
 
-          # Print to console
-          text_file = open(r"results\training\losses.txt", "a") 
-          print(f"EPOCH = {epoch} --- ITERATION = {iteration}")
-          text_file.write(f"\nEPOCH = {epoch} --- ITERATION = {iteration}\n")
-          print(f"Validation loss = {val_loss} --- Validation accuracy = {val_accuracy}")
-          text_file.write(f"Validation loss = {val_loss} --- Validation accuracy = {val_accuracy}\n\n")
-          text_file.close()
+        # Store the values in the dictionary
+        # Print to console
+        text_file = open(r"results\training\losses.txt", "a") 
+        print(f"EPOCH = {epoch} --- ITERATION = {iteration}")
+        text_file.write(f"\nEPOCH = {epoch} --- ITERATION = {iteration}\n")
+        print(f"Validation loss = {val_loss} --- Validation accuracy = {val_accuracy}")
+        text_file.write(f"Validation loss = {val_loss} --- Validation accuracy = {val_accuracy}\n\n")
+        text_file.close()
+        if val_accuracy > 0.96:
+          torch.save(cnn.state_dict(), rf"results\training\models\{epoch}-{iteration}-{val_accuracy}.pt")
 
 def logging_result(loss,epoch,start,losses):
   
@@ -224,8 +228,7 @@ def test(cnn, test_loader):
 
 
 if __name__ == "__main__":
-  
-  number_of_epochs = 500
+  number_of_epochs = 250
   train_loader, valid_loader, test_loader = ld.load_data()
   test_dict = {}
   for filename in os.listdir("our_models"):
@@ -236,5 +239,16 @@ if __name__ == "__main__":
       print(test(cnn, test_loader))
       test_dict[model_path] = test(cnn, test_loader)
   print(max(test_dict, key=test_dict.get))
-  # losses = train_model(cnn, train_loader, valid_loader, test_loader,num_epochs=number_of_epochs)
-  
+  cnn = CNN_model(numberConvolutionLayers=4,initialKernels=64,numberDense=0,neuronsDLayer=1024,dropout=0.5, dataset="ASL").to(DEVICE)
+  summary(cnn,(1, 3, 32, 32))
+  #losses = train_model(cnn, train_loader, valid_loader, test_loader,num_epochs=number_of_epochs)
+
+  # to plot the losses
+  # xh = np.arange(0,number_of_epochs)
+  # plt.plot(xh, losses, color = 'b', 
+  #        marker = ',',label = "Loss") 
+  # plt.xlabel("Epochs Traversed")
+  # plt.ylabel("Training Loss")
+  # plt.grid() 
+  # plt.legend() 
+  # plt.show()

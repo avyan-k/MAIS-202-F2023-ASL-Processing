@@ -1,6 +1,7 @@
 import os
 import torch
 from torchvision import datasets, transforms
+from torchvision.transforms import v2
 from torch.utils.data import DataLoader, random_split
 import opendatasets as od
 import matplotlib.pyplot as plt
@@ -23,9 +24,12 @@ def download_data():
 def load_data():
     
     # Define the transformations, including normalization
-    processing_transforms = transforms.Compose([
-        transforms.ToTensor(),                 # Convert Image to tensor
-        transforms.Resize(32,antialias=True),  # Resizing and smoothing out the images
+    processing_transforms = v2.Compose([
+            # v2.RandomAffine(degrees = 15,translate = (0.15,0.15)),
+            # v2.Grayscale(num_output_channels = 3),
+            v2.Resize(32),
+            v2.ToTensor(), # Convert PIL Image to tensor
+            
     ])
     
     # Apply Transformation and Loading Dataset
@@ -33,14 +37,14 @@ def load_data():
     test_dataset = datasets.ImageFolder(test_data_path,transform=processing_transforms)
     
     # Split the datasets into training, validation, and testing sets
-    train_dataset, valid_dataset, _ = random_split(full_train_dataset, [int(TRAIN_SET_SIZE*0.8), int(TRAIN_SET_SIZE*0.2),0])
+    train_dataset, valid_dataset, _ = random_split(full_train_dataset, [int(TRAIN_SET_SIZE*0.9), int(TRAIN_SET_SIZE*0.1),0])
     test_dataset, _, _ = random_split(test_dataset, [TESTING_SET_SIZE, len(test_dataset) - TESTING_SET_SIZE, 0])
     
 
     # Set Batch Size and shuffles the data
     train_loader = DataLoader(train_dataset, batch_size=3, shuffle=True)
     valid_loader = DataLoader(valid_dataset, batch_size=3, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=3, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=3, shuffle=False)
     
     print(f"Training set size: {len(train_dataset)}")
     print(f"Validation set size: {len(valid_dataset)}")
