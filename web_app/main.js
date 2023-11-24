@@ -25,6 +25,7 @@ startButton.addEventListener('click', async () => {
 snapButton.addEventListener('click', function () {
     // Draw the current video frame onto the canvas
     const context = canvas.getContext('2d');
+    var text = document.createTextNode("A");
     context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
 
     // Convert the canvas content to a data URL and trigger download
@@ -34,7 +35,7 @@ snapButton.addEventListener('click', function () {
     link.download = 'captured_image.png';
     link.click();
     // Generate Text
-    generatedText.innerHTML = "A"
+    generatedText.appendChild(text);
   });
 
 // Display Error if failed (Generated from Chat GPT)
