@@ -16,6 +16,7 @@ startButton.addEventListener('click', async () => {
         videoElement.srcObject = stream;
         startButton.disabled = true;
         stopButton.disabled = false;
+        snapButton.disabled = false;
     } catch (error) {
         console.error('Error accessing webcam:', error);
     }
@@ -38,7 +39,7 @@ snapButton.addEventListener('click', function () {
     generatedText.appendChild(text);
   });
 
-// Display Error if failed (Generated from Chat GPT)
+// Display Error if failed
 async function startWebcam() {
     try {
         stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -56,5 +57,6 @@ stopButton.addEventListener('click', () => {
         videoElement.srcObject = null;
         startButton.disabled = false;
         stopButton.disabled = true;
+        snapButton.disabled = true;
     }
 });

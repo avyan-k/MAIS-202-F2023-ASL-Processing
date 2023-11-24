@@ -16,6 +16,7 @@ header {
 
 h1 {
     display: inline;
+    text-align: center;
     font-size: 36pt;
     /*font-family: Georgia, 'Times New Roman', Times, serif;*/
     font-family: Trebuchet MS ;
@@ -24,6 +25,7 @@ h1 {
 #top {
     margin: auto;
     width: 80%;
+    text-align: center;
 }
 
 .logo {
