@@ -1,4 +1,4 @@
-
+<!-- 
 # Tuning Weight Regularization
 With tune_mean_std() we get:
 
@@ -17,6 +17,6 @@ With tune_mean_std() we get:
 After approximating the best weight from it we get:
 
 - mean: [0.4916,0.4697,0.4251]
-- standard deviation: [0.1584,0.1648,0.1768]
+- standard deviation: [0.1584,0.1648,0.1768] -->
 
 
