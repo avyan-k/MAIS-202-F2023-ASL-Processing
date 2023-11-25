@@ -1,4 +1,5 @@
 synthetic-asl-alphabet
+hand-landmarks
 src/__pycache__/*.pyc
 results/training/*.txt
 src/tempCodeRunnerFile.py
