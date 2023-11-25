@@ -103,8 +103,8 @@ def save_landmarks_disk():
     test_imagepath = os.path.join(PATH_TO_DATA,r"Test_Alphabet") # path to load from
     test_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Test") # path to save arrays to
 
-    # paths = [(train_imagepath,train_datapath),(test_imagepath, test_datapath)]
-    paths = [(test_imagepath, test_datapath)]
+    paths = [(train_imagepath,train_datapath),(test_imagepath, test_datapath)]
+
     for imagepath,datapath in paths:
         for class_directory in os.listdir(imagepath): # iterate through every class
             class_path = os.path.join(imagepath,class_directory)
