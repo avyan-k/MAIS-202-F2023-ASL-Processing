@@ -13,6 +13,7 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import pathlib
 
+
 PATH_TO_DATA = r"synthetic-asl-alphabet"
 PATH_TO_LANDMARK_DATA = r"hand-landmarks"
 test_data_path = PATH_TO_DATA + r"/Test_Alphabet"
@@ -80,9 +81,9 @@ class HandLandmarksDataset(Dataset):
         cindex = self.class_to_idx[class_name]
 
         if self.transform:
-            return self.transform(tensor), cindex
+            return self.transform(tensor).float(), cindex
         else:
-            return tensor, cindex
+            return tensor.float(), cindex
 
 def save_landmarks_disk():
     #creating HandMarker Object from Google MediaPipe
@@ -102,8 +103,8 @@ def save_landmarks_disk():
     test_imagepath = os.path.join(PATH_TO_DATA,r"Test_Alphabet") # path to load from
     test_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Test") # path to save arrays to
 
-    paths = [(train_imagepath,train_datapath),(test_imagepath, test_datapath)]
-
+    # paths = [(train_imagepath,train_datapath),(test_imagepath, test_datapath)]
+    paths = [(test_imagepath, test_datapath)]
     for imagepath,datapath in paths:
         for class_directory in os.listdir(imagepath): # iterate through every class
             class_path = os.path.join(imagepath,class_directory)
@@ -132,7 +133,6 @@ def load_landmark_data():
     train_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Train")
     test_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Test") 
 
-    # save_landmarks_disk()
     full_train_dataset = HandLandmarksDataset(train_datapath)
     train_size = len(full_train_dataset) # compute total size of dataset
     test_dataset = HandLandmarksDataset(test_datapath)
@@ -145,8 +145,9 @@ def load_landmark_data():
     test_loader = DataLoader(test_dataset, batch_size=3, shuffle=True)
 
     print(f"Training set size: {len(train_dataset)}")
-    print(f"Testing set size: {len(test_dataset)}")
     print(f"Validation set size: {len(valid_dataset)}")
+    print(f"Testing set size: {len(test_dataset)}")
+    
 
     return train_loader,valid_loader,test_loader
 
@@ -177,13 +178,13 @@ if __name__ == "__main__":
     # download_data()
     # train_loader, valid_loader, test_loader = load_data()
     # show_images(train_loader)
-    save_landmarks_disk()
-    train_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Test_Alphabet")
+    # save_landmarks_disk()
+    train_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Train")
     test_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Test") 
     pathlib.Path(train_datapath).mkdir(parents=True, exist_ok=True)
     pathlib.Path(test_datapath).mkdir(parents=True, exist_ok=True)
     train,validation,test = load_landmark_data()
 
-    for iteration, (X_train, y_train) in enumerate(test):
+    for iteration, (X_train, y_train) in enumerate(train):
         print(iteration,X_train,y_train)
     

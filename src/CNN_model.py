@@ -44,7 +44,7 @@ class CNN_model(nn.Module):
       # Flattened Output of Convolutional Layers
       flattened = int((image_size[0] / (2**(numberConvolutionLayers))))**2 * kernelsPerLayers 
     else:
-      flattened = neuronsDLayer * channels # if no conv layers, then flattened is the neurons amount
+      flattened = image_size[0]*image_size[1] * channels # if no conv layers, then flattened is the neurons amount
     
      
     self.dropout_layer = nn.Dropout(p=dropout) # dropout to reduce model and prevent overfitting
@@ -72,13 +72,11 @@ class CNN_model(nn.Module):
       if index % 2 == 1: 
         x = F.relu(x)  
         x = F.max_pool2d(x, 2) 
-
     x = torch.flatten(x, start_dim = 1) # Flatten to a 1D vector
     x = self.dropout_layer(x) # dropout on some of the convolution
 
 		# fully connected (dense) layers defined in self.dense_network
     for index, dense_layer in enumerate(self.dense_network):
-      
       # dropout on last layer: no ReLU
       if index == len(self.dense_network) - 1: 
         x = self.dropout_layer(x)
@@ -92,22 +90,21 @@ class CNN_model(nn.Module):
     return x # returns predicted class probabilities for each input
   
 
-def train_model(cnn,train_loader,valid_loader, num_epochs = 200,num_iterations_before_validation = 810,weight_decay=0.001):
+def train_model(model,input_shape,train_loader,valid_loader, num_epochs = 200,num_iterations_before_validation = 810,weight_decay=0.001):
   
   losses = np.empty(num_epochs)
   start = time.time()
   text_file = open(r"results\training\losses.txt", "w",encoding="utf-8")
   text_file.write(f"Attempting {num_epochs} epochs on date of {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n with model:")
-  model_stats = summary(cnn, (1, 3, 32, 32), verbose=0)
-  text_file.write(str(model_stats))
-  text_file.write(f"Model Summary: {summary(cnn, (1, 28, 28))}\n")
+  model_stats = summary(model, input_shape, verbose=0)
+  text_file.write(f"Model Summary:{str(model_stats)}\n")
   text_file.write('\n')
   text_file.close()
 
-  cnn = cnn.to(DEVICE)
+  model = model.to(DEVICE)
 
   # Initializes the Adam optimizer with the model's parameters
-  optimizer = optim.Adam(cnn.parameters(), lr=0.001,weight_decay=weight_decay)
+  optimizer = optim.Adam(model.parameters(), lr=0.001,weight_decay=weight_decay)
   loss = nn.CrossEntropyLoss().to(DEVICE)
   accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=27).to(DEVICE)
   
@@ -121,9 +118,8 @@ def train_model(cnn,train_loader,valid_loader, num_epochs = 200,num_iterations_b
 
       X_train = X_train.to(DEVICE)
       y_train = y_train.to(DEVICE)
-      
       # forward pass of the CNN model on the input data to get predictions
-      y_hat = cnn(X_train)
+      y_hat = model(X_train)
       
       # comparing the model's predictions with the truth labels
       train_loss = loss(y_hat, y_train)
@@ -136,7 +132,7 @@ def train_model(cnn,train_loader,valid_loader, num_epochs = 200,num_iterations_b
 
       # checks if should compute the validation metrics for plotting later
       if iteration % num_iterations_before_validation == 0 and epoch % 10 == 0:
-        valid_model(cnn,valid_loader,epoch,iteration,accuracy,loss)
+        valid_model(model,valid_loader,epoch,iteration,accuracy,loss)
 
     # logging results
     logging_result(train_loss,epoch,start,losses)
@@ -173,7 +169,7 @@ def valid_model(cnn,valid_loader,epoch,iteration,accuracy,loss):
         val_loss = (val_loss_sum / len(valid_loader)).cpu()
 
         # Store the values in the dictionary
-        # Print to console
+        # Out to console
         text_file = open(r"results\training\losses.txt", "a") 
         print(f"EPOCH = {epoch} --- ITERATION = {iteration}")
         text_file.write(f"\nEPOCH = {epoch} --- ITERATION = {iteration}\n")
@@ -232,7 +228,7 @@ def test(cnn, test_loader):
 if __name__ == "__main__":
   number_of_epochs = 250
   neurons_MLP = 100
-  train_loader, valid_loader, test_loader = ld.load_data()
+  # train_loader, valid_loader, test_loader = ld.load_data()
   landmark_train,landmark_validation,land_mark_test = ld.load_landmark_data()
   # test_dict = {}
   # for filename in os.listdir("our_models"):
@@ -243,11 +239,12 @@ if __name__ == "__main__":
   #     print(test(cnn, test_loader))
   #     test_dict[model_path] = test(cnn, test_loader)
   # print(max(test_dict, key=test_dict.get))
-  cnn = CNN_model(numberConvolutionLayers=4,initialKernels=64,numberDense=0,neuronsDLayer=1024,dropout=0.5).to(DEVICE)
-  mlp = CNN_model(numberConvolutionLayers=0,numberDense=0,neuronsDLayer=neurons_MLP,dropout=0.5, channels=1,image_size=1).to(DEVICE)
-  summary(cnn,(1, 3, 32, 32))
-  summary(mlp,(1, 1, neurons_MLP, 1))
-  losses = train_model(mlp, train_loader, valid_loader, test_loader,num_epochs=number_of_epochs)
+  # cnn = CNN_model(numberConvolutionLayers=4,initialKernels=64,numberDense=0,neuronsDLayer=1024,dropout=0.5).to(DEVICE)
+  mlp = CNN_model(numberConvolutionLayers=0,numberDense=0,neuronsDLayer=neurons_MLP,dropout=0.5, channels=3,image_size=(22,1)).to(DEVICE)
+  # summary(cnn,(1, 3, 32, 32))
+  summary(mlp,(1, 3, 22, 1))
+  # losses = train_model(cnn, train_loader, valid_loader,num_epochs=number_of_epochs,num_iterations_before_validation = 810)
+  losses = train_model(model=mlp,input_shape=(1, 3, 22, 1),train_loader=landmark_train, valid_loader=landmark_validation,num_epochs=number_of_epochs,num_iterations_before_validation = 2430)
 
   # to plot the losses
   # xh = np.arange(0,number_of_epochs)
