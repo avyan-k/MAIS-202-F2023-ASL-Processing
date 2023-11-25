@@ -18,11 +18,10 @@ from torchinfo import summary
 import os
 
 DEVICE = ld.load_device()
-channels,classes,image_size = (3,27,(32,32))
 
 class CNN_model(nn.Module):
 
-  def __init__(self,numberConvolutionLayers=4,initialKernels=64,numberDense = 0,neuronsDLayer=0,dropout=0.5,dataset = "ASL"):
+  def __init__(self,numberConvolutionLayers=4,initialKernels=64,numberDense = 0,neuronsDLayer=0,dropout=0.5,channels = 3, classes = 27,image_size = (32,32)):
     
     # Calls the constructor of the parent class (nn.Module) to properly initialize the model
     super(CNN_model, self).__init__() 
@@ -30,20 +29,24 @@ class CNN_model(nn.Module):
     # Convolutional Network
     self.convolutional_network = nn.ModuleList() # list that will store the convolutional layers of the model
     
-    kernelsPerLayers = initialKernels
-
-    # First convolutional layer
-    self.convolutional_network.append(nn.Conv2d(in_channels=channels,out_channels=kernelsPerLayers, kernel_size=3,padding="same")) 
-    self.convolutional_network.append(nn.BatchNorm2d(kernelsPerLayers)) # batch normalize the data
     
-    for i in range(numberConvolutionLayers - 1):
-      # Add convolution layer
-      self.convolutional_network.append(nn.Conv2d(in_channels=kernelsPerLayers,out_channels=kernelsPerLayers*2, kernel_size=3,padding="same")) 
-      kernelsPerLayers *= 2 # double kernels everytime
+    if numberConvolutionLayers > 0: #only add conv layer if needed
+      kernelsPerLayers = initialKernels
+        # First convolutional layer
+      self.convolutional_network.append(nn.Conv2d(in_channels=channels,out_channels=kernelsPerLayers, kernel_size=3,padding="same")) 
       self.convolutional_network.append(nn.BatchNorm2d(kernelsPerLayers)) # batch normalize the data
+      
+      for i in range(numberConvolutionLayers - 1):
+        # Add convolution layer
+        self.convolutional_network.append(nn.Conv2d(in_channels=kernelsPerLayers,out_channels=kernelsPerLayers*2, kernel_size=3,padding="same")) 
+        kernelsPerLayers *= 2 # double kernels everytime
+        self.convolutional_network.append(nn.BatchNorm2d(kernelsPerLayers)) # batch normalize the data
+      # Flattened Output of Convolutional Layers
+      flattened = int((image_size[0] / (2**(numberConvolutionLayers))))**2 * kernelsPerLayers 
+    else:
+      flattened = neuronsDLayer * channels # if no conv layers, then flattened is the neurons amount
     
-    # Flattened Output of Convolutional Layers
-    flattened = int((image_size[0] / (2**(numberConvolutionLayers))))**2 * kernelsPerLayers 
+     
     self.dropout_layer = nn.Dropout(p=dropout) # dropout to reduce model and prevent overfitting
 
     # Dense Network
@@ -62,7 +65,6 @@ class CNN_model(nn.Module):
   def forward(self, x):
     
     '''Forward pass function, needs to be defined for every model'''
-    
     for index,convLayer in enumerate(self.convolutional_network):
       # applies a convolution operation to the input
       x = convLayer(x) 
@@ -229,19 +231,23 @@ def test(cnn, test_loader):
 
 if __name__ == "__main__":
   number_of_epochs = 250
+  neurons_MLP = 100
   train_loader, valid_loader, test_loader = ld.load_data()
-  test_dict = {}
-  for filename in os.listdir("our_models"):
-    model_path = os.path.join("our_models", filename)
-    if os.path.isfile(model_path) and model_path.endswith('.pt'):
-      cnn = CNN_model(numberConvolutionLayers=4,initialKernels=64,numberDense=0,neuronsDLayer=1024,dropout=0.5, dataset="ASL").to(DEVICE)
-      cnn.load_state_dict(torch.load(model_path, map_location = DEVICE))
-      print(test(cnn, test_loader))
-      test_dict[model_path] = test(cnn, test_loader)
-  print(max(test_dict, key=test_dict.get))
-  cnn = CNN_model(numberConvolutionLayers=4,initialKernels=64,numberDense=0,neuronsDLayer=1024,dropout=0.5, dataset="ASL").to(DEVICE)
+  landmark_train,landmark_validation,land_mark_test = ld.load_landmark_data()
+  # test_dict = {}
+  # for filename in os.listdir("our_models"):
+  #   model_path = os.path.join("our_models", filename)
+  #   if os.path.isfile(model_path) and model_path.endswith('.pt'):
+  #     cnn = CNN_model(numberConvolutionLayers=4,initialKernels=64,numberDense=0,neuronsDLayer=1024,dropout=0.5).to(DEVICE)
+  #     cnn.load_state_dict(torch.load(model_path, map_location = DEVICE))
+  #     print(test(cnn, test_loader))
+  #     test_dict[model_path] = test(cnn, test_loader)
+  # print(max(test_dict, key=test_dict.get))
+  cnn = CNN_model(numberConvolutionLayers=4,initialKernels=64,numberDense=0,neuronsDLayer=1024,dropout=0.5).to(DEVICE)
+  mlp = CNN_model(numberConvolutionLayers=0,numberDense=0,neuronsDLayer=neurons_MLP,dropout=0.5, channels=1,image_size=1).to(DEVICE)
   summary(cnn,(1, 3, 32, 32))
-  #losses = train_model(cnn, train_loader, valid_loader, test_loader,num_epochs=number_of_epochs)
+  summary(mlp,(1, 1, neurons_MLP, 1))
+  losses = train_model(mlp, train_loader, valid_loader, test_loader,num_epochs=number_of_epochs)
 
   # to plot the losses
   # xh = np.arange(0,number_of_epochs)

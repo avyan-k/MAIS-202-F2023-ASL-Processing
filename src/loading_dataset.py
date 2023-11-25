@@ -2,14 +2,19 @@ import os
 import torch
 from torchvision import datasets, transforms
 from torchvision.transforms import v2
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import Dataset,DataLoader, random_split
 import opendatasets as od
 import matplotlib.pyplot as plt
 import numpy as np
 import torchvision
 from hyperpara_tuning import find_mean_stds
+import mediapipe as mp
+from mediapipe.tasks import python
+from mediapipe.tasks.python import vision
+import pathlib
 
 PATH_TO_DATA = r"synthetic-asl-alphabet"
+PATH_TO_LANDMARK_DATA = r"hand-landmarks"
 test_data_path = PATH_TO_DATA + r"/Test_Alphabet"
 train_data_path = PATH_TO_DATA + r"/Train_Alphabet"
 TRAIN_SET_SIZE = 24300
@@ -52,6 +57,99 @@ def load_data():
     
     return train_loader, valid_loader, test_loader
 
+class HandLandmarksDataset(Dataset):
+    def __init__(self, datapath : str,  transform=None):
+        """
+        Arguments:
+            datapath (string): Directory in which the class folders are located.
+            transform (callable, optional): Optional transform to be applied
+                on a sample.
+        """
+        self.paths = list(pathlib.Path(datapath).glob("*/*.npz")) # loads all possible numpy arrays in directory as filepaths
+        self.transform = transform
+        self.classes =  sorted(entry.name for entry in os.scandir(datapath) if entry.is_dir()) # finds all possible classes and sorts them
+        self.class_to_idx = {cls_name: i for i, cls_name in enumerate(self.classes)} # converts a class ot its index, used it __getitem__
+
+    def __len__(self) -> int:
+        return len(self.paths)
+    
+    def __getitem__(self, index : int) -> tuple[torch.Tensor, int]:
+        array = np.load(str(self.paths[index]))["arr_0"] # load array from filepath, note that since no arg is provided when saving, the first array is arr_0
+        tensor = torch.from_numpy(array) # convert to tensor
+        class_name  = self.paths[index].parent.name # since we use pathlib.Path, we can call its parent for the class
+        cindex = self.class_to_idx[class_name]
+
+        if self.transform:
+            return self.transform(tensor), cindex
+        else:
+            return tensor, cindex
+
+def save_landmarks_disk():
+    #creating HandMarker Object from Google MediaPipe
+    base_options = python.BaseOptions(model_asset_path='hand_landmarker.task')
+    options = vision.HandLandmarkerOptions(base_options=base_options,
+                                        num_hands=1)
+    detector = vision.HandLandmarker.create_from_options(options)
+
+
+
+    #load image to MediaPipe Environment
+    image = mp.Image.create_from_file("images\G.png")
+    
+    train_imagepath = os.path.join(PATH_TO_DATA,r"Train_Alphabet") # path to load from
+    train_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Train")  # path to save arrays to
+
+    test_imagepath = os.path.join(PATH_TO_DATA,r"Test_Alphabet") # path to load from
+    test_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Test") # path to save arrays to
+
+    paths = [(train_imagepath,train_datapath),(test_imagepath, test_datapath)]
+
+    for imagepath,datapath in paths:
+        for class_directory in os.listdir(imagepath): # iterate through every class
+            class_path = os.path.join(imagepath,class_directory)
+            pathlib.Path(os.path.join(datapath,class_directory)).mkdir(parents=True, exist_ok=True) # if folder does not exist, create it
+            for filename in os.listdir(class_path): # iterate through every image
+                file_path = os.path.join(imagepath,class_directory,filename)
+                if os.path.isfile(file_path) and file_path.endswith('.png'): # only process ong files
+                    
+                    detection_result = detector.detect(image) # Detect hand landmarks from the input image.
+                    image_array = np.empty((22,3)) #22 landmarks including handedness, 3 coordinates per landmark
+
+                    for i,landmark in enumerate(detection_result.hand_landmarks[0]): # iterate through each of the 21 landmarks
+                        image_array[i][0] = landmark.x # x coordinate of handLandmark
+                        image_array[i][1] = landmark.y # y coordinate of handLandmark
+                        image_array[i][2] = landmark.z # z coordinate of handLandmark
+                    
+                    image_array[21] = ord(detection_result.handedness[0][0].display_name[0]) # save first letter of handedness
+                    print(os.path.join(datapath,class_directory,filename))
+                    np.savez(os.path.join(datapath,class_directory,filename),image_array)
+    return 
+
+
+
+def load_landmark_data():
+    print(f"Loading data from: {PATH_TO_LANDMARK_DATA}")
+    train_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Train")
+    test_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Test") 
+
+    # save_landmarks_disk()
+    full_train_dataset = HandLandmarksDataset(train_datapath)
+    train_size = len(full_train_dataset) # compute total size of dataset
+    test_dataset = HandLandmarksDataset(test_datapath)
+
+    # Split the datasets into training, validation, and testing sets
+    train_dataset, valid_dataset, _ = random_split(full_train_dataset, [int(train_size*0.9),train_size - int(train_size*0.9),0])
+
+    train_loader = DataLoader(train_dataset, batch_size=3, shuffle=True)
+    valid_loader = DataLoader(valid_dataset, batch_size=3, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=3, shuffle=True)
+
+    print(f"Training set size: {len(train_dataset)}")
+    print(f"Testing set size: {len(test_dataset)}")
+    print(f"Validation set size: {len(valid_dataset)}")
+
+    return train_loader,valid_loader,test_loader
+
 def load_device():
     
     # if a macOs then use mps
@@ -76,9 +174,16 @@ def show_images(loader):
 
 if __name__ == "__main__":
     
-    download_data()
-    train_loader, valid_loader, test_loader = load_data()
-    show_images(train_loader)
-    
-    
+    # download_data()
+    # train_loader, valid_loader, test_loader = load_data()
+    # show_images(train_loader)
+    save_landmarks_disk()
+    train_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Test_Alphabet")
+    test_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Test") 
+    pathlib.Path(train_datapath).mkdir(parents=True, exist_ok=True)
+    pathlib.Path(test_datapath).mkdir(parents=True, exist_ok=True)
+    train,validation,test = load_landmark_data()
+
+    for iteration, (X_train, y_train) in enumerate(test):
+        print(iteration,X_train,y_train)
     
