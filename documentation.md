@@ -22,13 +22,15 @@
 
     - Changing 100 to 8 batch size
 
+![title](/images/image.png)
+
 # Current Status:
 
 - Our best model has 98% testing accuracy
 
 - We want to training it again with rotations, transitions and antialias
 
-- Our model can't predict images from a webcam due to the different pixel distribution from the images in the dataset compare to an imgae taken from a webcam
+- Our model can't predict images from a webcam due to the different pixel distribution from the images in the dataset compare to an image taken from a webcam
 
 # Model doesn't work on images taken from a webcam:
 
@@ -38,11 +40,8 @@
 - We want to predict the unlabeled data (target domain) with our labeled kaggle dataset (source domain)
 - Add a lost function (correlation alignment) at the last CNN layer
 
-## Solution 2: Train Model on Only Hand Guesture
+## Solution 2: Pre-process dataset with MediaPipe
 
-- Would need to process and create the hand gesture posture data of the currently used dataset
-- Train on that data instead
-- Use hand recognition when using webcam
-- Captures hand guesture posture
-
-
+- Instead of images being our dataset, we have 21 features (hand-knuckles corrdinates) per data
+- Train with an MLP on that data instead of CNN
+- Use hand recognition with webcam

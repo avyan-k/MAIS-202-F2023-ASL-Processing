@@ -39,8 +39,6 @@
     
     # out_channels = initialKernels
     # in_channels = channels
-    # self.convolutional_network.append(nn.Conv2d(in_channels=channels,out_channels=out_channels, kernel_size=3,padding="same")) # first convolutional layer
-    # self.convolutional_network.append(nn.BatchNorm2d(out_channels)) # batch normalize the data
     
     #  for i in range(numberConvolutionLayers-1):
     #   print(f"{in_channels}")
