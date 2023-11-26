@@ -19,19 +19,23 @@ Basic Sign Language Translator that interprets ASL language using Machine Learni
 ## Usage
 
 1. Open your terminal and cd to the MAIS-202-F2023-ASL-Processing directory:
+
 `cd path/into/MAIS-202-F2023-ASL-Processing`
 
 2. To install all of the required packages, type the following command:
+
 `pip install -r requirements.txt`
 
 3. To Lauch the web application by running the following command:
+
 `python app.py`
 
 4. Open our website with http://localhost:0000 in our web brower.
 
-Run [pytorch_version.py](https://github.com/avyan-k/MAIS-202-F2023-ASL-Processing/blob/main/src/pytorch_version.py) to load the data. Training the model will be implemented at a later time.
-
 ## Dataset
+
+<!-- Run [pytorch_version.py](https://github.com/avyan-k/MAIS-202-F2023-ASL-Processing/blob/main/src/pytorch_version.py) to load the data. Training the model will be implemented at a later time.  -->
+
 With `get_and_split_dataset()` in `hyperpara_tuning.py` we split the dataset into training set (72%) validation set (18%) and testing set (10%)
 
 ## Choosen Hyperparameters Summary
