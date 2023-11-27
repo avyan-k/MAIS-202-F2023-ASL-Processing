@@ -7,12 +7,10 @@ import opendatasets as od
 import matplotlib.pyplot as plt
 import numpy as np
 import torchvision
-from hyperpara_tuning import find_mean_stds
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import pathlib
-
 
 PATH_TO_DATA = r"synthetic-asl-alphabet"
 PATH_TO_LANDMARK_DATA = r"hand-landmarks"
@@ -26,7 +24,6 @@ def download_data():
     if not os.path.exists(r"synthetic-asl-alphabet"):
         od.download("https://www.kaggle.com/datasets/lexset/synthetic-asl-alphabet/data")
 
-
 def load_data():
     
     # Define the transformations, including normalization
@@ -34,8 +31,7 @@ def load_data():
             # v2.RandomAffine(degrees = 15,translate = (0.15,0.15)),
             # v2.Grayscale(num_output_channels = 3),
             v2.Resize(32),
-            v2.ToTensor(), # Convert PIL Image to tensor
-            
+            v2.ToTensor(), # Convert PIL Image to tensor    
     ])
     
     # Apply Transformation and Loading Dataset
@@ -86,16 +82,14 @@ class HandLandmarksDataset(Dataset):
             return tensor.float(), cindex
 
 def save_landmarks_disk():
-    #creating HandMarker Object from Google MediaPipe
+    
+    # creating HandMarker Object from Google MediaPipe
     base_options = python.BaseOptions(model_asset_path='hand_landmarker.task')
-    options = vision.HandLandmarkerOptions(base_options=base_options,
-                                        num_hands=1)
+    options = vision.HandLandmarkerOptions(base_options=base_options,num_hands=1)
     detector = vision.HandLandmarker.create_from_options(options)
-
-
-
-    #load image to MediaPipe Environment
-    image = mp.Image.create_from_file("images\G.png")
+    
+    # load image to MediaPipe Environment
+    image = mp.Image.create_from_file("images/testing/G.png")
     
     train_imagepath = os.path.join(PATH_TO_DATA,r"Train_Alphabet") # path to load from
     train_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Train")  # path to save arrays to
@@ -129,6 +123,7 @@ def save_landmarks_disk():
 
 
 def load_landmark_data():
+    
     print(f"Loading data from: {PATH_TO_LANDMARK_DATA}")
     train_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Train")
     test_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Test") 
@@ -179,6 +174,7 @@ if __name__ == "__main__":
     # train_loader, valid_loader, test_loader = load_data()
     # show_images(train_loader)
     # save_landmarks_disk()
+    
     train_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Train")
     test_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Test") 
     pathlib.Path(train_datapath).mkdir(parents=True, exist_ok=True)
@@ -186,5 +182,7 @@ if __name__ == "__main__":
     train,validation,test = load_landmark_data()
 
     for iteration, (X_train, y_train) in enumerate(train):
+        
         print(iteration,X_train,y_train)
+        break
     
