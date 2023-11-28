@@ -16,6 +16,7 @@ import pathlib
 
 PATH_TO_DATA = r"synthetic-asl-alphabet"
 PATH_TO_LANDMARK_DATA = r"hand-landmarks"
+PATH_TO_SIMPLEASL_DATA = r"asl-alphabet"
 test_data_path = PATH_TO_DATA + r"/Test_Alphabet"
 train_data_path = PATH_TO_DATA + r"/Train_Alphabet"
 TRAIN_SET_SIZE = 24300
@@ -25,6 +26,8 @@ def download_data():
     
     if not os.path.exists(r"synthetic-asl-alphabet"):
         od.download("https://www.kaggle.com/datasets/lexset/synthetic-asl-alphabet/data")
+    if not os.path.exists(r"asl-alphabet"):
+        od.download("https://www.kaggle.com/datasets/grassknoted/asl-alphabet")
 
 
 def load_data():
@@ -43,7 +46,7 @@ def load_data():
     test_dataset = datasets.ImageFolder(test_data_path,transform=processing_transforms)
     
     # Split the datasets into training, validation, and testing sets
-    train_dataset, valid_dataset, _ = random_split(full_train_dataset, [int(TRAIN_SET_SIZE*0.9), int(TRAIN_SET_SIZE*0.1),0])
+    train_dataset, valid_dataset, _ = random_split(full_train_dataset, [int(TRAIN_SET_SIZE*0.01), int(TRAIN_SET_SIZE*0.01),TRAIN_SET_SIZE- int(TRAIN_SET_SIZE*0.01) - int(TRAIN_SET_SIZE*0.01)])
     test_dataset, _, _ = random_split(test_dataset, [TESTING_SET_SIZE, len(test_dataset) - TESTING_SET_SIZE, 0])
     
 
@@ -57,6 +60,39 @@ def load_data():
     print(f"Testing set size: {len(test_dataset)}")
     
     return train_loader, valid_loader, test_loader
+
+def load_simpleASL_data():
+    
+    # Define the transformations, including normalization
+    processing_transforms = v2.Compose([
+            # v2.RandomAffine(degrees = 15,translate = (0.15,0.15)),
+            # v2.Grayscale(num_output_channels = 3),
+            v2.Resize(128),
+            
+            v2.ToTensor(), # Convert PIL Image to tensor
+    ])
+    
+    # Apply Transformation and Loading Dataset
+    full_train_dataset = datasets.ImageFolder(r"asl-alphabet\asl_alphabet_train",transform=processing_transforms)
+    test_dataset = datasets.ImageFolder(r"asl-alphabet\asl_alphabet_test",transform=processing_transforms)
+    train_size = len(full_train_dataset)
+    test_size = len(test_dataset)
+    # Split the datasets into training, validation, and testing sets
+    train_dataset, valid_dataset, _ = random_split(full_train_dataset, [int(train_size*0.9), int(train_size*0.1),train_size- int(train_size*0.9) - int(train_size*0.1)])
+    test_dataset, _, _ = random_split(test_dataset, [test_size, 0, 0])
+    
+
+    # Set Batch Size and shuffles the data
+    train_loader = DataLoader(train_dataset, batch_size=3, shuffle=True)
+    valid_loader = DataLoader(valid_dataset, batch_size=3, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=3, shuffle=False)
+    
+    print(f"Training set size: {len(train_dataset)}")
+    print(f"Validation set size: {len(valid_dataset)}")
+    print(f"Testing set size: {len(test_dataset)}")
+    
+    return train_loader, valid_loader, test_loader
+
 
 class HandLandmarksDataset(Dataset):
     def __init__(self, datapath : str,  transform=None):
@@ -76,7 +112,7 @@ class HandLandmarksDataset(Dataset):
     
     def __getitem__(self, index : int) -> tuple[torch.Tensor, int]:
         array = np.load(str(self.paths[index]))["arr_0"] # load array from filepath, note that since no arg is provided when saving, the first array is arr_0
-        tensor = torch.from_numpy(array) # convert to tensor
+        tensor = torch.from_numpy(array[:-1]) # convert to tensor
         class_name  = self.paths[index].parent.name # since we use pathlib.Path, we can call its parent for the class
         cindex = self.class_to_idx[class_name]
 
@@ -103,8 +139,8 @@ def save_landmarks_disk():
     test_imagepath = os.path.join(PATH_TO_DATA,r"Test_Alphabet") # path to load from
     test_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Test") # path to save arrays to
 
-    # paths = [(train_imagepath,train_datapath),(test_imagepath, test_datapath)]
-    paths = [(test_imagepath, test_datapath)]
+    paths = [(train_imagepath,train_datapath),(test_imagepath, test_datapath)]
+
     for imagepath,datapath in paths:
         for class_directory in os.listdir(imagepath): # iterate through every class
             class_path = os.path.join(imagepath,class_directory)
@@ -138,7 +174,7 @@ def load_landmark_data():
     test_dataset = HandLandmarksDataset(test_datapath)
 
     # Split the datasets into training, validation, and testing sets
-    train_dataset, valid_dataset, _ = random_split(full_train_dataset, [int(train_size*0.9),train_size - int(train_size*0.9),0])
+    train_dataset, valid_dataset, _ = random_split(full_train_dataset, [int(train_size*0.01),int(train_size*0.01),train_size - int(train_size*0.01)-int(train_size*0.01)])
 
     train_loader = DataLoader(train_dataset, batch_size=3, shuffle=True)
     valid_loader = DataLoader(valid_dataset, batch_size=3, shuffle=True)
@@ -168,6 +204,7 @@ def show_images(loader):
     counter=0
     for images, labels in loader:
         if counter == 5 : break
+        print(images[counter])
         plt.imshow(images[counter].permute(1, 2, 0))
         plt.title(f"Label: {labels[0]}")
         plt.show()
@@ -175,16 +212,14 @@ def show_images(loader):
 
 if __name__ == "__main__":
     
-    # download_data()
-    # train_loader, valid_loader, test_loader = load_data()
-    # show_images(train_loader)
+    download_data()
+    train_loader, valid_loader, test_loader = load_simpleASL_data()
+    show_images(train_loader)
     # save_landmarks_disk()
-    train_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Train")
-    test_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Test") 
-    pathlib.Path(train_datapath).mkdir(parents=True, exist_ok=True)
-    pathlib.Path(test_datapath).mkdir(parents=True, exist_ok=True)
-    train,validation,test = load_landmark_data()
+    # train_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Train")
+    # test_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Test") 
+    # pathlib.Path(train_datapath).mkdir(parents=True, exist_ok=True)
+    # pathlib.Path(test_datapath).mkdir(parents=True, exist_ok=True)
+    # train,validation,test = load_landmark_data()
 
-    for iteration, (X_train, y_train) in enumerate(train):
-        print(iteration,X_train,y_train)
     

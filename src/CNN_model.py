@@ -19,6 +19,29 @@ import os
 
 DEVICE = ld.load_device()
 
+
+class MLP_model(nn.Module):
+
+  def __init__(self,layers, neurons_per_layer,dropout=0.5, input_shape = (22,3)):
+    super(MLP_model, self).__init__() 
+    input_neurons = input_shape[0] * input_shape[1]
+    self.dropout = dropout
+    self.network = nn.ModuleList()
+    self.network.append(nn.Linear(input_neurons, neurons_per_layer))
+    for x in range(layers-1):
+        self.network.append(nn.Linear(neurons_per_layer, neurons_per_layer))
+    self.network.append(nn.Linear(neurons_per_layer, 27))
+
+  def forward(self, x):
+      x = torch.flatten(x, start_dim = 1) # Flatten to a 1D vector
+      for layer in self.network:
+          x = F.leaky_relu(layer(x))
+          x = F.dropout(x,self.dropout)
+      return x
+
+
+
+
 class CNN_model(nn.Module):
 
   def __init__(self,numberConvolutionLayers=4,initialKernels=64,numberDense = 0,neuronsDLayer=0,dropout=0.5,channels = 3, classes = 27,image_size = (32,32)):
@@ -90,7 +113,7 @@ class CNN_model(nn.Module):
     return x # returns predicted class probabilities for each input
   
 
-def train_model(model,input_shape,train_loader,valid_loader, num_epochs = 200,num_iterations_before_validation = 810,weight_decay=0.001):
+def train_model(model,input_shape,train_loader,valid_loader, num_epochs = 200,num_iterations_before_validation = 810,learning_rate = 0.001, weight_decay=0.001):
   
   losses = np.empty(num_epochs)
   start = time.time()
@@ -104,15 +127,15 @@ def train_model(model,input_shape,train_loader,valid_loader, num_epochs = 200,nu
   model = model.to(DEVICE)
 
   # Initializes the Adam optimizer with the model's parameters
-  optimizer = optim.Adam(model.parameters(), lr=0.001,weight_decay=weight_decay)
+  optimizer = optim.Adam(model.parameters(), lr=learning_rate,weight_decay=weight_decay)
   loss = nn.CrossEntropyLoss().to(DEVICE)
-  accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=27).to(DEVICE)
+  accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=29).to(DEVICE)
   
-  for epoch in range(num_epochs):
-    
+  for epoch in tqdm(range(num_epochs),desc="Epoch",position=0,leave=False):
+  # for epoch in range(num_epochs):
     # Iterate through the training data
-    for iteration, (X_train, y_train) in enumerate(train_loader):
-
+    # for iteration, (X_train, y_train) in enumerate(train_loader):
+    for iteration, (X_train, y_train) in enumerate(tqdm((train_loader),desc="Iteration",position=1,leave=False)):
       # resets all gradients to 0 after each batch
       optimizer.zero_grad()
 
@@ -131,14 +154,14 @@ def train_model(model,input_shape,train_loader,valid_loader, num_epochs = 200,nu
       optimizer.step()
 
       # checks if should compute the validation metrics for plotting later
-      if iteration % num_iterations_before_validation == 0 and epoch % 10 == 0:
+      if iteration % num_iterations_before_validation == 0 and epoch % 5 == 0:
         valid_model(model,valid_loader,epoch,iteration,accuracy,loss)
 
     # logging results
     logging_result(train_loss,epoch,start,losses)
 
   text_file = open(r"results\training\losses.txt", "a") 
-  text_file.write(f"Losses: \n{losses}")
+  text_file.write(f"Losses: \n{losses}\n")
   text_file.close()
   return losses
 
@@ -154,7 +177,8 @@ def valid_model(cnn,valid_loader,epoch,iteration,accuracy,loss):
         val_loss_sum = 0
 
         # Make a predictions on the full validation set, batch by batch
-        for X_val, y_val in valid_loader:
+        # for X_val, y_val in valid_loader:
+        for X_val, y_val in tqdm(valid_loader,desc="Validation Iteration",position=2,leave=False):
 
           # Move the batch to GPU if it's available
           X_val = X_val.to(DEVICE)
@@ -226,10 +250,9 @@ def test(cnn, test_loader):
 
 
 if __name__ == "__main__":
-  number_of_epochs = 250
-  neurons_MLP = 100
-  # train_loader, valid_loader, test_loader = ld.load_data()
-  landmark_train,landmark_validation,land_mark_test = ld.load_landmark_data()
+  number_of_epochs = 50
+  train_loader, valid_loader, test_loader = ld.load_simpleASL_data()
+  # landmark_train,landmark_validation,land_mark_test = ld.load_landmark_data()
   # test_dict = {}
   # for filename in os.listdir("our_models"):
   #   model_path = os.path.join("our_models", filename)
@@ -239,19 +262,41 @@ if __name__ == "__main__":
   #     print(test(cnn, test_loader))
   #     test_dict[model_path] = test(cnn, test_loader)
   # print(max(test_dict, key=test_dict.get))
-  # cnn = CNN_model(numberConvolutionLayers=4,initialKernels=64,numberDense=0,neuronsDLayer=1024,dropout=0.5).to(DEVICE)
-  mlp = CNN_model(numberConvolutionLayers=0,numberDense=0,neuronsDLayer=neurons_MLP,dropout=0.5, channels=3,image_size=(22,1)).to(DEVICE)
-  # summary(cnn,(1, 3, 32, 32))
-  summary(mlp,(1, 3, 22, 1))
-  # losses = train_model(cnn, train_loader, valid_loader,num_epochs=number_of_epochs,num_iterations_before_validation = 810)
-  losses = train_model(model=mlp,input_shape=(1, 3, 22, 1),train_loader=landmark_train, valid_loader=landmark_validation,num_epochs=number_of_epochs,num_iterations_before_validation = 2430)
+  cnn = CNN_model(numberConvolutionLayers=4,initialKernels=64,numberDense=0,neuronsDLayer=1024,dropout=0.5,classes=29,image_size=(128,128)).to(DEVICE)
+  # mlp = MLP_model(layers = 0, neurons_per_layer = 10,dropout=0.5, input_shape = (21,3)).to(DEVICE)
+  summary(cnn,(1, 3, 128,128))
+  # summary(mlp,(1, 3, 21, 1))
+  # losses = train_model(model=mlp,input_shape=(1, 3, 21, 1),train_loader=landmark_train, valid_loader=landmark_validation,num_epochs=number_of_epochs,num_iterations_before_validation = 2430,learning_rate=0.01)
 
+  # best_loss = train_model(model=mlp,input_shape=(1, 3, 22, 1),train_loader=landmark_train, valid_loader=landmark_validation,num_epochs=number_of_epochs,num_iterations_before_validation = 2430,learning_rate=0.05)
+  best_losses = train_model(model=cnn,input_shape=(1, 3, 128,128),train_loader=train_loader, valid_loader=valid_loader,num_epochs=number_of_epochs,num_iterations_before_validation = 2430)
+  # best_lr, best_nbr_layers, best_neurons_per_layers = 0, 0, 0
+  # best_loss = float('-inf')
+  # best_losses = []
+  # grids = 10
+  # for i in tqdm(range (grids),desc="Learning Rate",position=0):
+  #       for j in tqdm(range(grids),desc="Layers",position=1,leave=False):
+  #             for k in tqdm(range(grids),desc="Neurons",position=2,leave=False):
+  #                     lr = np.divide(i+1,100)#such that learning rate is at most 0.1, close to 0
+  #                     layers = j
+  #                     neurons = (k+1)*10 #neurons from 1 to grids, strictly positive
+  #                     mlp = MLP_model(layers = layers, neurons_per_layer = neurons,dropout=0.5, input_shape = (21,3)).to(DEVICE)
+  #                     # print(f"learning_rate: {lr} layers: {layers} neurons: {neurons}")
+  #                     losses = train_model(model=mlp,input_shape=(1, 3, 21, 1),train_loader=landmark_train, valid_loader=landmark_validation,num_epochs=number_of_epochs,num_iterations_before_validation = 2430,learning_rate=lr)
+  #                     loss = (sum(losses[:10]) / 10)-(sum(losses[-10:] )/ 10)
+  #                     if loss > best_loss:
+  #                               best_loss = loss
+  #                               best_losses = losses
+  #                               best_lr = lr
+  #                               best_nbr_layers = layers
+  #                               best_neurons_per_layers = neurons
+  # print(f"Best Parameters: \n learning_rate: {best_lr} layers: {best_nbr_layers} neurons: {best_neurons_per_layers}")
   # to plot the losses
-  # xh = np.arange(0,number_of_epochs)
-  # plt.plot(xh, losses, color = 'b', 
-  #        marker = ',',label = "Loss") 
-  # plt.xlabel("Epochs Traversed")
-  # plt.ylabel("Training Loss")
-  # plt.grid() 
-  # plt.legend() 
-  # plt.show()
+  xh = np.arange(0,number_of_epochs)
+  plt.plot(xh, best_losses, color = 'b', 
+         marker = ',',label = "Loss") 
+  plt.xlabel("Epochs Traversed")
+  plt.ylabel("Training Loss")
+  plt.grid() 
+  plt.legend() 
+  plt.show()
