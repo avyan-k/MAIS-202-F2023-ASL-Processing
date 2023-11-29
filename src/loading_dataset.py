@@ -7,12 +7,13 @@ import opendatasets as od
 import matplotlib.pyplot as plt
 import numpy as np
 import torchvision
-from hyperpara_tuning import find_mean_stds
+# from hyperpara_tuning import find_mean_stds
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import pathlib
-
+import cv2
+from tqdm import tqdm
 
 PATH_TO_DATA = r"synthetic-asl-alphabet"
 PATH_TO_LANDMARK_DATA = r"hand-landmarks"
@@ -131,7 +132,6 @@ def save_landmarks_disk():
 
 
     #load image to MediaPipe Environment
-    image = mp.Image.create_from_file("images\G.png")
     
     train_imagepath = os.path.join(PATH_TO_DATA,r"Train_Alphabet") # path to load from
     train_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Train")  # path to save arrays to
@@ -139,28 +139,40 @@ def save_landmarks_disk():
     test_imagepath = os.path.join(PATH_TO_DATA,r"Test_Alphabet") # path to load from
     test_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Test") # path to save arrays to
 
-    paths = [(train_imagepath,train_datapath),(test_imagepath, test_datapath)]
-
+    paths = [(test_imagepath, test_datapath)]
+    skipped = {}
     for imagepath,datapath in paths:
-        for class_directory in os.listdir(imagepath): # iterate through every class
+        for class_directory in tqdm(os.listdir(imagepath),desc="Classes",position=0): # iterate through every class
+            if class_directory == "Blank":
+                continue
             class_path = os.path.join(imagepath,class_directory)
             pathlib.Path(os.path.join(datapath,class_directory)).mkdir(parents=True, exist_ok=True) # if folder does not exist, create it
-            for filename in os.listdir(class_path): # iterate through every image
+            skipped[class_directory] = []
+            for filename in  tqdm(os.listdir(class_path),desc="Images",position=1,leave=False): # iterate through every image
                 file_path = os.path.join(imagepath,class_directory,filename)
-                if os.path.isfile(file_path) and file_path.endswith('.png'): # only process ong files
-                    
+                if os.path.isfile(file_path) and file_path.endswith('.png'): # only process png files
+                    image = mp.Image.create_from_file(file_path) #load image to MediaPipe Environment
                     detection_result = detector.detect(image) # Detect hand landmarks from the input image.
+                    if not detection_result.hand_landmarks:
+                        # print(f"Skipped: {file_path}")
+                        skipped[class_directory].append(filename)
+                        continue
                     image_array = np.empty((22,3)) #22 landmarks including handedness, 3 coordinates per landmark
-
+                    
                     for i,landmark in enumerate(detection_result.hand_landmarks[0]): # iterate through each of the 21 landmarks
                         image_array[i][0] = landmark.x # x coordinate of handLandmark
                         image_array[i][1] = landmark.y # y coordinate of handLandmark
                         image_array[i][2] = landmark.z # z coordinate of handLandmark
-                    
-                    image_array[21] = ord(detection_result.handedness[0][0].display_name[0]) # save first letter of handedness
-                    print(os.path.join(datapath,class_directory,filename))
+                    hand = detection_result.handedness[0][0].display_name[0] # saving 
+                    if hand == "R":
+                        image_array[21][0] = 0
+                    elif hand == "L":
+                        image_array[21][0] = 1
+                    else:
+                        raise ValueError(f"Wrong Value for Hand: {hand}")
+                    # print(os.path.join(datapath,class_directory,filename))
                     np.savez(os.path.join(datapath,class_directory,filename),image_array)
-    return 
+    return skipped
 
 
 
@@ -213,13 +225,23 @@ def show_images(loader):
 if __name__ == "__main__":
     
     download_data()
-    train_loader, valid_loader, test_loader = load_simpleASL_data()
-    show_images(train_loader)
-    # save_landmarks_disk()
+    # train_loader, valid_loader, test_loader = load_simpleASL_data()
+    # show_images(train_loader)
+    d = save_landmarks_disk()
+    quantified_d = dict((k, len(v)) for k, v in d.items())
+    with open(r"results\training\skipped_data.txt", "w") as f:
+        f.write(f"{str(quantified_d)}\n")
+    for class_name, image_paths in d.items():
+        with open(r"results\training\skipped_data.txt", "a") as f:
+            f.write(f"{class_name}: ")
+            for path in image_paths:
+                f.write(f"{path}\n")
+            f.write("\n")
     # train_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Train")
     # test_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Test") 
     # pathlib.Path(train_datapath).mkdir(parents=True, exist_ok=True)
     # pathlib.Path(test_datapath).mkdir(parents=True, exist_ok=True)
     # train,validation,test = load_landmark_data()
-
+    # for X,y in train:
+    #     print(X[0])
     
