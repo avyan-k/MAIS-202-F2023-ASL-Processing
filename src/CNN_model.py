@@ -273,7 +273,7 @@ if __name__ == "__main__":
   for filename in os.listdir(r"results\training\models"):
     model_path = os.path.join(r"results\training\models", filename)
     if os.path.isfile(model_path) and model_path.endswith('.pt'):
-      cnn = mlp = MLP_model(layers = 5, neurons_per_layer = 64,dropout=0, input_shape = (21,2)).to(DEVICE).to(DEVICE)
+      cnn = mlp = MLP_model(layers = 5, neurons_per_layer = 64,dropout=0, input_shape = (21,2)).to(DEVICE)
       cnn.load_state_dict(torch.load(model_path, map_location = DEVICE))
       print(test(cnn, land_mark_test))
       test_dict[model_path] = test(cnn, land_mark_test)
