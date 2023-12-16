@@ -91,11 +91,8 @@ def predict_image(save_dir,frame,i,cnn):
     img = Image.open(path)
     image = mp.Image(image_format=mp.ImageFormat.SRGB,data=np.asarray(img))
     result = ld.image_to_landmarks(image)
-    print(type(result))
-    result = torch.tensor(result,dtype=torch.float32).to(DEVICE)
-    print(result.size())
-    print(type(result))
-    cnn.eval()      
+    result = torch.tensor(result.reshape(1,21,2),dtype=torch.float32).to(DEVICE)
+    cnn.eval()
     
     output = cnn(result)
     
