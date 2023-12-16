@@ -157,7 +157,7 @@ def train_model(model,input_shape,train_loader,valid_loader, num_epochs = 200,nu
       optimizer.step()
 
       # checks if should compute the validation metrics for plotting later
-      if iteration == val_iteration and epoch % 5 == 0:
+      if iteration % val_iteration == 0 and epoch % 5 == 0:
         valid_model(model,valid_loader,epoch,iteration,accuracy,loss)
 
     # logging results
@@ -253,7 +253,7 @@ def test(cnn, test_loader):
 
 
 if __name__ == "__main__":
-  number_of_epochs = 100         
+  number_of_epochs = 15         
   # train_loader, valid_loader, test_loader = ld.load_simpleASL_data()
   landmark_train,landmark_validation,land_mark_test = ld.load_landmark_data()
   # test_dict = {}
@@ -277,7 +277,8 @@ if __name__ == "__main__":
       cnn.load_state_dict(torch.load(model_path, map_location = DEVICE))
       print(test(cnn, land_mark_test))
       test_dict[model_path] = test(cnn, land_mark_test)
-  print(max(test_dict, key=test_dict.get))
+  if test_dict:
+    print(max(test_dict, key=test_dict.get))
   # best_losses = train_model(model=mlp,input_shape=(1, 2, 21, 1),train_loader=landmark_train, valid_loader=landmark_validation,num_epochs=number_of_epochs,number_of_validations = 3,learning_rate=0.001)
 
   # best_loss = train_model(model=mlp,input_shape=(1, 3, 22, 1),train_loader=landmark_train, valid_loader=landmark_validation,num_epochs=number_of_epochs,num_iterations_before_validation = 2430,learning_rate=0.05)
