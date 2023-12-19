@@ -30,11 +30,15 @@ snapButton.addEventListener('click', function () {
     context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
 
     // Convert the canvas content to a data URL and trigger download
-    const dataURL = canvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    link.href = dataURL;
-    link.download = 'captured_image.png';
-    link.click();
+    context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+      // Get pixel data from the canvas
+      const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+      const pixelData = imageData.data;
+
+      // Now, pixelData is an array containing the pixel values of the captured image
+      console.log(pixelData);
+      const pythonConvert = JSON.stringify(pixelData);
     // Generate Text
     generatedText.appendChild(text);
   });

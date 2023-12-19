@@ -1,7 +1,7 @@
-import io
-import torch
+#import io
+#import torch
 from flask import Flask, render_template, request
-from PIL import Image
+#from PIL import Image
 
 app = Flask(__name__)
 
@@ -10,7 +10,11 @@ app = Flask(__name__)
 
 @app.route("/") # rendering html page
 def index():
-    return render_template("web_app.html")
+    return render_template("index.html", name='Main')
+
+@app.route("/receive")
+def receive_data():
+    data = request.pythonConvert.json  
 
 @app.route("/data")
 def data():
