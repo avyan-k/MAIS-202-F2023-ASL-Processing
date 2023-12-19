@@ -18,16 +18,9 @@ ALPHABET = ['A', 'B', ' ', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'
 DEVICE = ld.load_device()
 
 def load_mlp_model():
-    
-    # Load your CNN model here
-    
     model = MLP_model(layers = 5, neurons_per_layer = 64,dropout=0, input_shape = (21,2)).to(DEVICE)
-    
-    # Load the pretrained weights if available
     model.load_state_dict(torch.load(r"our_models/MLP/model3.pt",map_location = DEVICE))
-    summary(model,(1,2,21,1))
     model.eval()
-    
     return model
 
 def capture_images():
@@ -55,7 +48,7 @@ def capture_images():
     # Allow the camera to adjust for the first image
     time.sleep(2)
     
-    cnn = load_mlp_model()
+    mlp = load_mlp_model()
     i=0
     # Capture frame_num of images
     while(True):
@@ -72,7 +65,7 @@ def capture_images():
             i+=1
             continue
 
-        predict_image(save_dir,frame,i,cnn)
+        predict_image(save_dir,frame,i,mlp)
         
         # Wait for 1 second
         cv2.waitKey(1000)

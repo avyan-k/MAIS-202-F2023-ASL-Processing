@@ -39,6 +39,13 @@ snapButton.addEventListener('click', function () {
       // Now, pixelData is an array containing the pixel values of the captured image
       console.log(pixelData);
       const pythonConvert = JSON.stringify(pixelData);
+
+      fetch('/receive', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json',},
+        body: JSON.stringify({ pythonConvert }),
+      });
+
     // Generate Text
     generatedText.appendChild(text);
   });
