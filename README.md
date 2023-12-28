@@ -1,6 +1,6 @@
 # MAIS-202-F2023-ASL-Processing
 
-![Alt text](images/website.png)
+![](images/website.png)
 
 ## About the Project
 
@@ -56,3 +56,10 @@ python web_app.py
 | Neurons per Layers      | Number of neurons per dense layers                       | 1024                                                |
 | Dropout                 | Number of neurons we leave out per dense layers          | 0.5                                                 |
 
+# Testing out
+
+1. First follow the steps in load dataset
+
+2. Run the `capture_input.py` under the src folder
+
+3. Test it out and follow the steps in the terminal!
