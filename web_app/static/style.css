@@ -1,0 +1,108 @@
+#webcam {
+    height: 512px;
+    width: 512px;
+}
+
+header {
+    /* background-color: #006400;  Dark Green - Forest Theme */
+    background-color: #bc2649;
+    color: white;
+    padding-top: 30px;
+    padding-bottom: 60px;
+    padding-left: 30px;
+    padding-right: 30px;
+    height: 120px;
+}
+
+h1 {
+    display: inline;
+    text-align: center;
+    font-size: 36pt;
+    /*font-family: Georgia, 'Times New Roman', Times, serif;*/
+    font-family: Trebuchet MS ;
+    /* font-family: Bioweapon; */
+}
+#top {
+    margin: auto;
+    width: 80%;
+    text-align: center;
+}
+
+.logo {
+    margin-bottom: -50px;
+}
+
+#capturedImage {
+    height: 512px;
+    width: 512px;
+}
+
+#image-container {
+    margin: auto;
+}
+
+button {
+    background-color: #bc2649; /* Forest Green - Forest Theme */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #edcdc1; /* Slightly Darker Forest Green */
+}
+
+button:disabled {
+    background-color: #edcdc1;
+}
+
+#translation-output {
+    margin-top: 20px;
+    font-size: 18px;
+    font-family: Trebuchet MS ;
+
+}
+body {
+    background-color: #c55662; /* Forest Green - Forest Theme */
+    font-family: Arial, sans-serif;
+    margin: 0px;
+}
+main {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+#steps h2 {
+    font-family: Trebuchet MS ;
+    /* font-family: Verdana, Geneva, Tahoma, sans-serif; */
+    color: white;
+    margin-left: 50px;
+}
+
+#steps li {
+    font-family: Trebuchet MS ;
+    /* font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif; */
+    color: white;
+    font-size: 14pt;
+    margin-top: 30px;
+    margin-left: 50px;
+}
+
+#translated {
+    font-family: Arial, sans-serif;
+    color: white;
+    font-size: 18pt;
+    margin-left: 90px;
+    margin-right: 50px;
+    border-bottom: 5px solid #bc2649;
+}
+
+#webcam {
+    border: 15px solid #e2b8a7;
+}
+
+#video-frame {
+    margin: 20px;
+}
