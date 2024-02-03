@@ -89,31 +89,6 @@ def predict_image(save_dir,frame,i,cnn):
     
     output = cnn(result)
     
-    # Save the image with a unique filename
-    # To test on user input image
-    #path = os.path.join(save_dir, f"image_{i}.png")
-    
-    # to test on dataset
-    # path = os.path.join(r"images/O.png")
-
-    #img = Image.open(path)
-    
-    # Transformations
-    #     transform = transforms.Compose([
-    #     transforms.ToTensor(),
-    #     #transforms.Resize(32,antialias=True),  # Resize to 32x32
-    # ])
-
-    # Apply Transformations
-    # img_tensor = transform(img)
-    # img_tensor = img_tensor.unsqueeze(0)  # Add batch dimension
-
-    # Make predictions using the CNN model
-    
-     
-    # with torch.no_grad():
-    # output = cnn(img_tensor.to(DEVICE))
-
     # Get the predicted class
     _, predicted_class = torch.max(output, 1)
     

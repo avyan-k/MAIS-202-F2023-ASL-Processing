@@ -122,7 +122,9 @@ class HandLandmarksDataset(Dataset):
             return self.transform(tensor).float(), cindex
         else:
             return tensor.float(), cindex
+        
 def image_to_landmarks(image):
+    
     '''
     Takes an image in MediaPipe format, detects landmarks, and return 21 2d coordinates as an array
     '''
@@ -138,6 +140,7 @@ def image_to_landmarks(image):
             image_array[i][0] = landmark.x # x coordinate of handLandmark
             image_array[i][1] = landmark.y # y coordinate of handLandmark
     return image_array
+
 def save_landmarks_disk():
     landmark_transforms = v2.Compose([
         v2.RandomAffine(degrees = 15,translate = (0.15,0.15)),
