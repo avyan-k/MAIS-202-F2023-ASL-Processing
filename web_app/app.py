@@ -95,11 +95,6 @@ def receive_data():
     save_image(image_data, directory_path, filename)
     letter = getLetter()
     
-    
-    # Save the array to the file
-    #np.save(filename, image_data)
-    
-    #letter = "A"
     return {'letter': letter}
 
 if __name__ == "__main__":
