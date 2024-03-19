@@ -30,8 +30,7 @@ def download_data():
         od.download("https://www.kaggle.com/datasets/lexset/synthetic-asl-alphabet/data")
     if not os.path.exists(r"asl-alphabet"):
         od.download("https://www.kaggle.com/datasets/grassknoted/asl-alphabet")
-
-
+        
 def load_data():
     
     # Define the transformations, including normalization
@@ -70,7 +69,6 @@ def load_simpleASL_data():
             v2.RandomAffine(degrees = 15,translate = (0.15,0.15)),
             v2.Grayscale(num_output_channels = 3),
             v2.Resize(128),
-            
             v2.ToTensor(), # Convert PIL Image to tensor
     ])
     
@@ -128,10 +126,9 @@ def image_to_landmarks(image):
     '''
     Takes an image in MediaPipe format, detects landmarks, and return 21 2d coordinates as an array
     '''
-    #creating HandMarker Object from Google MediaPipe
+    # creating HandMarker Object from Google MediaPipe
     base_options = python.BaseOptions(model_asset_path='hand_landmarker.task')
-    options = vision.HandLandmarkerOptions(base_options=base_options,
-                                        num_hands=1)
+    options = vision.HandLandmarkerOptions(base_options=base_options,num_hands=1)
     detector = vision.HandLandmarker.create_from_options(options)
     detection_result = detector.detect(image) # Detect hand landmarks from the input image.
     image_array = np.zeros((21,2)) #22 landmarks including handedness, 3 coordinates per landmark  
@@ -180,8 +177,6 @@ def save_landmarks_disk():
                         image_array = image_to_landmarks(image)
                     np.savez(os.path.join(datapath,class_directory,filename),image_array)
     return data[train_imagepath], data[test_imagepath]
-
-
 
 def load_landmark_data():
     

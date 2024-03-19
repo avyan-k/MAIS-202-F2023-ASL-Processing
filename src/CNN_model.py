@@ -42,9 +42,6 @@ class MLP_model(nn.Module):
           x = F.dropout(x,self.dropout)
       return x
 
-
-
-
 class CNN_model(nn.Module):
 
   def __init__(self,numberConvolutionLayers=4,initialKernels=64,numberDense = 0,neuronsDLayer=0,dropout=0.5,channels = 3, classes = 27,image_size = (32,32)):

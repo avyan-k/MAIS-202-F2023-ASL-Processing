@@ -9,6 +9,18 @@ const generatedText = document.getElementById('translated')
 
 let stream;
 
+// stream = await navigator.mediaDevices.getUserMedia({ video: true });
+// videoElement.srcObject = stream;
+// videoElement.onloadedmetadata = () => {
+//     videoElement.width = videoElement.videoWidth;
+//     videoElement.height = videoElement.videoHeight;
+// };
+videoElement.onloadedmetadata = () => {
+    // This will ensure the video displays at the correct dimensions
+    videoElement.width = videoElement.videoWidth;
+    videoElement.height = videoElement.videoHeight;
+};
+
 // Start Webcam
 startButton.addEventListener('click', async () => {
     try {
@@ -24,8 +36,14 @@ startButton.addEventListener('click', async () => {
 
 // Take Picture and download Snapped Image
 snapButton.addEventListener('click', function () {
+
     // Draw the current video frame onto the canvas
     const context = canvas.getContext('2d');
+
+    // Adjust canvas size to match video dimensions
+    canvas.width = videoElement.videoWidth;
+    canvas.height = videoElement.videoHeight;
+    
     // var text = document.createTextNode("A");
     context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
     
@@ -33,13 +51,28 @@ snapButton.addEventListener('click', function () {
     let imageData = context.getImageData(0, 0, canvas.width, canvas.height);
     let pixelArray=imageData.data;
 
+
+    // Reshape the 1D array into a 3D array:
+    let pixelData3D = new Array(canvas.height);
+    for (let i = 0; i < canvas.height; i++) {
+        pixelData3D[i] = new Array(canvas.width);
+        for (let j = 0; j < canvas.width; j++) {
+            pixelData3D[i][j] = [
+                pixelArray[(i * canvas.width + j) * 4], // Red
+                pixelArray[(i * canvas.width + j) * 4 + 1], // Green
+                pixelArray[(i * canvas.width + j) * 4 + 2], // Blue
+                pixelArray[(i * canvas.width + j) * 4 + 3] // Alpha
+            ];
+        }
+    }
+
     let pixelDataArray = Array.from(pixelArray);
     fetch('/receive', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({imageData: pixelDataArray})
+        body: JSON.stringify({imageData: pixelData3D})
     })
     .then(response => response.json())
     .then(data => {
