@@ -15,10 +15,12 @@ sys.path.append(current_dir)
 from flask import Flask, render_template, request
 import numpy as np
 from torch.utils.data import Dataset,DataLoader
+from torch import tensor, float32, argmax
 from datetime import datetime
 import torchmetrics
 from glob import glob
 from PIL import Image
+import predict
 
 DEVICE = ld.load_device()
 
@@ -48,19 +50,18 @@ def croped_shaped_image(folder_path):
 
 def getLetter():
     X = croped_shaped_image("images/saved_arrays")
-    print(X.size)
     image_array = np.array(X.convert('RGB'))
     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image_array)
     X_array = ld.image_to_landmarks(mp_image)
     X_array =X_array.astype(np.float32)
-    print(len(X_array))
-    loader = DataLoader(X_array,batch_size=4)
-    mlp = cnn.MLP_model(layers = 5, neurons_per_layer = 64,dropout=0, input_shape = (21,2)).to(DEVICE)
-    mlp = mlp.to(DEVICE)
-    for x in loader:
-        x = x.to(DEVICE)
-        letter_prediction = mlp(x) # error here
-    return letter_prediction
+    mlp = predict.load_mlp_model()
+    prediction = mlp(tensor(X_array.reshape(1,21,2),dtype=float32).to(DEVICE)) # reshape to incorporate batch size
+    letter_prediction = argmax(prediction) #letter is of highest probability
+    # for x in loader:
+    #     print(x)
+    #     x = x.to(DEVICE)
+    #     letter_prediction = mlp(x) # error here
+    return predict.ALPHABET[letter_prediction]
 
 def save_image(image_array, folder_path, filename):
   if not os.path.exists(folder_path):

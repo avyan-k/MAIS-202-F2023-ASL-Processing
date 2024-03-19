@@ -266,6 +266,8 @@ if __name__ == "__main__":
   mlp = MLP_model(layers = 5, neurons_per_layer = 64,dropout=0, input_shape = (21,2)).to(DEVICE)
   # summary(cnn,(1, 3, 128,128))
   summary(mlp,(1, 2, 21, 1))
+  mlp.load_state_dict(torch.load(r'our_models\MLP\model3.pt', map_location = DEVICE))
+  print(test(mlp, land_mark_test))
   test_dict = {}
   for filename in os.listdir(r"results\training\models"):
     model_path = os.path.join(r"results\training\models", filename)
