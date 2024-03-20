@@ -44,4 +44,13 @@ So im not sure why it says its the wrong size. You can see in the getLetter meth
     return forward_call(*args, **kwargs)
   File "/Users/tatax/Library/Python/3.9/lib/python/site-packages/torch/nn/modules/linear.py", line 114, in forward
     return F.linear(input, self.weight, self.bias)
-RuntimeError: linear(): input and weight.T shapes cannot be multiplied (4x2 and 42x64)```
+RuntimeError: linear(): input and weight.T shapes cannot be multiplied (4x2 and 42x64)
+```
+
+# Update - Tracy - March 19th 2024
+
+Error fixed, just needed to unsqueeze it.
+
+Updated README.md and Recorded Demo
+
+Project Completed
