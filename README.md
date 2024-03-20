@@ -1,7 +1,8 @@
 # MAIS-202-F2023-ASL-Processing
 
 <!-- ![](images/website.png) -->
-![Demo](images/demo_asl.mov)
+Click the youtube link below for video of the demo
+![](images/website.png)(https://youtu.be/W6THl5gSJh0)
 
 ## About the Project
 
