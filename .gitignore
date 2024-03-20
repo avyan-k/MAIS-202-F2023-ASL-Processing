@@ -2,5 +2,9 @@ synthetic-asl-alphabet
 hand-landmarks
 src/__pycache__/*.pyc
 results/training/*.txt
+results/training/*.pt
+results/training/
 src/tempCodeRunnerFile.py
 mnist
+asl-alphabet
+images/saved_arrays

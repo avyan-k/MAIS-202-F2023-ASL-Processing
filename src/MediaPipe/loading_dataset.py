@@ -185,4 +185,3 @@ if __name__ == "__main__":
         
         print(iteration,X_train,y_train)
         break
-    

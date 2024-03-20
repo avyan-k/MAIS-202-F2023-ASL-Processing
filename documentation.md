@@ -1,47 +1,56 @@
-# Validation and training loss is not decreasing
 
-- Data normalization doesn't have weird color anymore like green/red/bue (i just changed the mean and std deviation ) but it doesn't work on dark background with dark skin tone.
+# Update - Tracy - March 19th 2024
 
-- Resized to 256x256 instead of 512x512 (still doesn't work)
+## main.js
 
-- the mnist dataset work on our model (when we mimic the lecture model)
+We used to have a problem with the way the webcam was saving the image (it was compressing it instead of cropping) I fixed that
 
-- our dataset doesn't work on the mimiced lecture model
+And I also changed the way it is displayed (not as a square anymore but as the default webcam size)
 
-- tried removing all the convo layers basically to just have a simple mlp but it still didn't work
+## app.py
 
-- Avyan made it work! the solution was:
+Inside the ```receive_data()``` method, I get the image data that is an (480,640,4) array from javascript
 
-    - Resizing it from all images in dataset from 512px to 32px
+I save the image in png format to the "images/saved_images" path with the helper method ```save_image()```
 
-    - Changing 3 to 64 kernel in the initial convolutional layer
+Then I call getLetter to get the letter
 
-    - Changing 8 to 1024 neurons per dense layers
+I have 3 helper functions:
 
-    - Changing 3 to 4 convolutional layers in network  
+1. ```save_image()``` saves the png image to the directory path "images/saved_images"
 
-    - Changing 100 to 8 batch size
+2. ```croped_shaped_image(folder_path)```
 
-![title](/images/image.png)
+Takes the folder path ("images/saved_images") and finds the latest saved png image (which is of size 480x640) and then crop it and resize it to 512x512.
 
-# Current Status:
+3. ```getLetter()```
 
-- Our best model has 98% testing accuracy
+Calls ```croped_shaped_image()``` to get the most recent image in the right size
 
-- We want to training it again with rotations, transitions and antialias
+Converts image to RGB then to media pipe image type then to hand landmard then to an array of float 32
 
-- Our model can't predict images from a webcam due to the different pixel distribution from the images in the dataset compare to an image taken from a webcam
+Then I have a loader I put batch size at 4 but i tried it at batch size of 1 and it still didn't work
 
-# Model doesn't work on images taken from a webcam:
+### Error Code
 
-## Solution 1: Domain Adaptation with the CORAL method
+So im not sure why it says its the wrong size. You can see in the getLetter method I print out the sizes of the image and hand landmark and they all check out. so yeah ...
 
-- Would need a unlabeled dataset of size of about 1500 images taken by the webcam (target domain)
-- We want to predict the unlabeled data (target domain) with our labeled kaggle dataset (source domain)
-- Add a lost function (correlation alignment) at the last CNN layer
 
-## Solution 2: Pre-process dataset with MediaPipe
+```File "/Users/tatax/Documents/GitHub/MAIS-202-F2023-ASL-Processing/src/CNN_model.py", line 41, in forward
+    x = F.leaky_relu(layer(x))
+  File "/Users/tatax/Library/Python/3.9/lib/python/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/Users/tatax/Library/Python/3.9/lib/python/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/Users/tatax/Library/Python/3.9/lib/python/site-packages/torch/nn/modules/linear.py", line 114, in forward
+    return F.linear(input, self.weight, self.bias)
+RuntimeError: linear(): input and weight.T shapes cannot be multiplied (4x2 and 42x64)
+```
 
-- Instead of images being our dataset, we have 21 features (hand-knuckles corrdinates) per data
-- Train with an MLP on that data instead of CNN
-- Use hand recognition with webcam
+# Update - Tracy - March 19th 2024
+
+Error fixed, just needed to unsqueeze it.
+
+Updated README.md and Recorded Demo
+
+Project Completed
