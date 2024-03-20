@@ -1,6 +1,7 @@
 // Identification for Javascript
 const videoElement = document.getElementById('webcam');
 const startButton = document.getElementById('startButton');
+const deleteButton = document.getElementById('deleteButton');
 const snapButton = document.getElementById('snapButton');
 const canvas = document.getElementById('canvas');
 const capturedImage = document.getElementById('capturedImage');
@@ -8,15 +9,9 @@ const stopButton = document.getElementById('stopButton');
 const generatedText = document.getElementById('translated')
 
 let stream;
+let MESSAGE = "";
 
-// stream = await navigator.mediaDevices.getUserMedia({ video: true });
-// videoElement.srcObject = stream;
-// videoElement.onloadedmetadata = () => {
-//     videoElement.width = videoElement.videoWidth;
-//     videoElement.height = videoElement.videoHeight;
-// };
 videoElement.onloadedmetadata = () => {
-    // This will ensure the video displays at the correct dimensions
     videoElement.width = videoElement.videoWidth;
     videoElement.height = videoElement.videoHeight;
 };
@@ -28,7 +23,18 @@ startButton.addEventListener('click', async () => {
         videoElement.srcObject = stream;
         startButton.disabled = true;
         stopButton.disabled = false;
+        deleteButton.disabled = false;
         snapButton.disabled = false;
+    } catch (error) {
+        console.error('Error accessing webcam:', error);
+    }
+});
+
+// Delete last letter from MESSAGE
+deleteButton.addEventListener('click', async () => {
+    try {
+        MESSAGE = MESSAGE.slice(0, -1);
+        generatedText.innerText = MESSAGE;
     } catch (error) {
         console.error('Error accessing webcam:', error);
     }
@@ -51,7 +57,6 @@ snapButton.addEventListener('click', function () {
     let imageData = context.getImageData(0, 0, canvas.width, canvas.height);
     let pixelArray=imageData.data;
 
-
     // Reshape the 1D array into a 3D array:
     let pixelData3D = new Array(canvas.height);
     for (let i = 0; i < canvas.height; i++) {
@@ -65,8 +70,6 @@ snapButton.addEventListener('click', function () {
             ];
         }
     }
-
-    let pixelDataArray = Array.from(pixelArray);
     fetch('/receive', {
         method: 'POST',
         headers: {
@@ -76,13 +79,12 @@ snapButton.addEventListener('click', function () {
     })
     .then(response => response.json())
     .then(data => {
-        // Display the random letter received from the backend
-        generatedText.innerText = data.letter;
+        MESSAGE = MESSAGE + data.letter;
+        generatedText.innerText = MESSAGE;
     })
     .catch((error) => {
         console.error('Error:', error);
     });
-
   });
 
 // Display Error if failed
@@ -104,5 +106,6 @@ stopButton.addEventListener('click', () => {
         startButton.disabled = false;
         stopButton.disabled = true;
         snapButton.disabled = true;
+        deleteButton.disabled = true;
     }
 });

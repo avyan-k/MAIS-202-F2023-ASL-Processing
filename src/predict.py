@@ -1,18 +1,9 @@
-import cv2
 import os
-import time
 from PIL import Image
-from torchvision import datasets, transforms
-from CNN_model import CNN_model
-from CNN_model import MLP_model
+from MLP_model import MLP_model
 import loading_dataset as ld
 import torch
-import torch.nn.functional as F
-import mediapipe as mp
-from mediapipe.tasks import python
-from mediapipe.tasks.python import vision
 import numpy as np
-from torchinfo import summary
 import matplotlib.pyplot as plt
 
 ALPHABET = ['A', 'B', ' ', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']

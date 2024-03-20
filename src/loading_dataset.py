@@ -1,18 +1,15 @@
 import os
 import torch
-from torchvision import datasets, transforms
+from torchvision import datasets
 from torchvision.transforms import v2
 from torch.utils.data import Dataset,DataLoader, random_split
 import opendatasets as od
 import matplotlib.pyplot as plt
 import numpy as np
-import torchvision
-# from hyperpara_tuning import find_mean_stds
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import pathlib
-import cv2
 from tqdm import tqdm
 import PIL as pil
 

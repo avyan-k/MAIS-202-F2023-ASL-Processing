@@ -1,6 +1,7 @@
 # MAIS-202-F2023-ASL-Processing
 
-![](images/website.png)
+<!-- ![](images/website.png) -->
+![Demo](images/demo_asl.mov)
 
 ## About the Project
 
@@ -46,7 +47,7 @@ python web_app.py
 5. With `load_landmark_data.py` we split the dataset into training set (72%) validation set (18%) and testing set (10%)
 
 
-# Chossen Hyperparameters Summary
+<!-- # Choosen Hyperparameters Summary
 
 | Hyperparameters         | Explanation                                              | Computed Result                                     |
 |-------------------------|----------------------------------------------------------|-----------------------------------------------------|
@@ -55,11 +56,4 @@ python web_app.py
 | Dense Layers            | Number of linear layers                                  | 3                                                   |
 | Neurons per Layers      | Number of neurons per dense layers                       | 1024                                                |
 | Dropout                 | Number of neurons we leave out per dense layers          | 0.5                                                 |
-
-# Testing out
-
-1. First follow the steps in load dataset
-
-2. Run the `capture_input.py` under the src folder
-
-3. Test it out and follow the steps in the terminal!
+ -->

@@ -78,7 +78,7 @@ main {
     font-family: Trebuchet MS ;
     /* font-family: Verdana, Geneva, Tahoma, sans-serif; */
     color: white;
-    margin-left: 50px;
+    margin-left: 100px;
 }
 
 #steps li {
@@ -87,15 +87,16 @@ main {
     color: white;
     font-size: 14pt;
     margin-top: 30px;
-    margin-left: 50px;
+    margin-left: 100px;
 }
 
-#translated {
+#translated{
     font-family: Arial, sans-serif;
     color: white;
     font-size: 18pt;
-    margin-left: 90px;
-    margin-right: 50px;
+    margin-left: 100px;
+    margin-right: 100px;
+    margin-top: 80px;
     border-bottom: 5px solid #bc2649;
 }
 
