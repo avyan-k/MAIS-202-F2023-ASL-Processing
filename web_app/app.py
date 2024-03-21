@@ -3,7 +3,8 @@ import sys
 current_dir = dirname(abspath(__file__))
 parent_dir = dirname(current_dir)
 sys.path.append(join(parent_dir, 'src'))
-import loading_dataset as ld
+import MediaPipe.loading_dataset as ld
+import predict
 sys.path.append(current_dir)
 import os
 import mediapipe as mp
@@ -13,7 +14,6 @@ from torch import tensor, float32, argmax
 from datetime import datetime
 from glob import glob
 from PIL import Image
-import predict
 
 DEVICE = ld.load_device()
 

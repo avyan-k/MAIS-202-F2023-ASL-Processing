@@ -1,7 +1,7 @@
 import os
 from PIL import Image
-from MLP_model import MLP_model
-import loading_dataset as ld
+import MediaPipe.loading_dataset as ld
+from MediaPipe.MLP_model import MLP_model
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
