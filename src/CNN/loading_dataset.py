@@ -34,7 +34,7 @@ def load_data():
     test_dataset = datasets.ImageFolder(test_data_path,transform=processing_transforms)
     
     # Split the datasets into training, validation, and testing sets
-    train_dataset, valid_dataset, _ = random_split(full_train_dataset, [int(TRAIN_SET_SIZE*0.9), int(TRAIN_SET_SIZE*0.1),0])
+    train_dataset, valid_dataset, _ = random_split(full_train_dataset, [int(TRAIN_SET_SIZE*0.01), int(TRAIN_SET_SIZE*0.01),TRAIN_SET_SIZE- int(TRAIN_SET_SIZE*0.01) - int(TRAIN_SET_SIZE*0.01)])
     test_dataset, _, _ = random_split(test_dataset, [TESTING_SET_SIZE, len(test_dataset) - TESTING_SET_SIZE, 0])
     
 
@@ -48,6 +48,7 @@ def load_data():
     print(f"Testing set size: {len(test_dataset)}")
     
     return train_loader, valid_loader, test_loader
+
 
 def load_device():
     
@@ -71,8 +72,41 @@ def show_images(loader):
         plt.show()
         counter+=1
 
+def load_simpleASL_data():
+
+    # Define the transformations, including normalization
+    processing_transforms = v2.Compose([
+            v2.RandomAffine(degrees = 15,translate = (0.15,0.15)),
+            v2.Grayscale(num_output_channels = 3),
+            v2.Resize(128),
+            v2.ToTensor(), # Convert PIL Image to tensor
+    ])
+
+    # Apply Transformation and Loading Dataset
+    full_train_dataset = datasets.ImageFolder(r"asl-alphabet\asl_alphabet_train",transform=processing_transforms)
+    test_dataset = datasets.ImageFolder(r"asl-alphabet\asl_alphabet_test",transform=processing_transforms)
+    train_size = len(full_train_dataset)
+    test_size = len(test_dataset)
+    # Split the datasets into training, validation, and testing sets
+    train_dataset, valid_dataset, _ = random_split(full_train_dataset, [int(train_size*0.9), int(train_size*0.1),train_size- int(train_size*0.9) - int(train_size*0.1)])
+    test_dataset, _, _ = random_split(test_dataset, [test_size, 0, 0])
+
+
+    # Set Batch Size and shuffles the data
+    train_loader = DataLoader(train_dataset, batch_size=3, shuffle=True)
+    valid_loader = DataLoader(valid_dataset, batch_size=3, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=3, shuffle=False)
+
+    print(f"Training set size: {len(train_dataset)}")
+    print(f"Validation set size: {len(valid_dataset)}")
+    print(f"Testing set size: {len(test_dataset)}")
+
+    return train_loader, valid_loader, test_loader
+
 if __name__ == "__main__":
     
     download_data()
     train_loader, valid_loader, test_loader = load_data()
     show_images(train_loader)
+
+

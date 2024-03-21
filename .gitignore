@@ -1,10 +1,12 @@
 synthetic-asl-alphabet
 hand-landmarks
-src/__pycache__/*.pyc
+__pycache__/
+*.py[cod]
+*$py.class
 results/training/*.txt
 results/training/*.pt
 results/training/
-src/tempCodeRunnerFile.py
 mnist
 asl-alphabet
 images/saved_arrays
+tempCodeRunnerFile.py
