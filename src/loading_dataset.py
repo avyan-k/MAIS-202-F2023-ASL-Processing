@@ -2,7 +2,7 @@ import os
 import torch
 from torchvision import datasets
 from torchvision.transforms import v2
-from torch.utils.data import Dataset,DataLoader, random_split
+from torch.utils.data import Dataset, DataLoader, random_split
 import opendatasets as od
 import matplotlib.pyplot as plt
 import numpy as np
@@ -22,42 +22,12 @@ TRAIN_SET_SIZE = 24300
 TESTING_SET_SIZE = 2700
 
 def download_data():
-    
+    """to download the dataset if it isn't downloaded yet
+    """
     if not os.path.exists(r"synthetic-asl-alphabet"):
         od.download("https://www.kaggle.com/datasets/lexset/synthetic-asl-alphabet/data")
     if not os.path.exists(r"asl-alphabet"):
         od.download("https://www.kaggle.com/datasets/grassknoted/asl-alphabet")
-        
-def load_data():
-    
-    # Define the transformations, including normalization
-    processing_transforms = v2.Compose([
-            # v2.RandomAffine(degrees = 15,translate = (0.15,0.15)),
-            # v2.Grayscale(num_output_channels = 3),
-            v2.Resize(32),
-            v2.ToTensor(), # Convert PIL Image to tensor
-            
-    ])
-    
-    # Apply Transformation and Loading Dataset
-    full_train_dataset = datasets.ImageFolder(train_data_path,transform=processing_transforms)
-    test_dataset = datasets.ImageFolder(test_data_path,transform=processing_transforms)
-    
-    # Split the datasets into training, validation, and testing sets
-    train_dataset, valid_dataset, _ = random_split(full_train_dataset, [int(TRAIN_SET_SIZE*0.01), int(TRAIN_SET_SIZE*0.01),TRAIN_SET_SIZE- int(TRAIN_SET_SIZE*0.01) - int(TRAIN_SET_SIZE*0.01)])
-    test_dataset, _, _ = random_split(test_dataset, [TESTING_SET_SIZE, len(test_dataset) - TESTING_SET_SIZE, 0])
-    
-
-    # Set Batch Size and shuffles the data
-    train_loader = DataLoader(train_dataset, batch_size=3, shuffle=True)
-    valid_loader = DataLoader(valid_dataset, batch_size=3, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=3, shuffle=False)
-    
-    print(f"Training set size: {len(train_dataset)}")
-    print(f"Validation set size: {len(valid_dataset)}")
-    print(f"Testing set size: {len(test_dataset)}")
-    
-    return train_loader, valid_loader, test_loader
 
 def load_simpleASL_data():
     
@@ -89,7 +59,6 @@ def load_simpleASL_data():
     print(f"Testing set size: {len(test_dataset)}")
     
     return train_loader, valid_loader, test_loader
-
 
 class HandLandmarksDataset(Dataset):
     def __init__(self, datapath : str,  transform=None):
@@ -135,7 +104,13 @@ def image_to_landmarks(image):
             image_array[i][1] = landmark.y # y coordinate of handLandmark
     return image_array
 
+
 def save_landmarks_disk():
+    """
+    Summary: Normalize the image dataset and detect landmarks on each image in the dataset to create new hand landmark dataset with mediapipe
+    
+    Returns:  landmark dataset
+    """
     landmark_transforms = v2.Compose([
         v2.RandomAffine(degrees = 15,translate = (0.15,0.15)),
     ])
@@ -175,8 +150,23 @@ def save_landmarks_disk():
                     np.savez(os.path.join(datapath,class_directory,filename),image_array)
     return data[train_imagepath], data[test_imagepath]
 
-def load_landmark_data():
+def load_device():
     
+    # if a macOs then use mps
+    if torch.backends.mps.is_built(): device = torch.device("mps")
+    
+    # elif a GPU is available, use it
+    elif torch.cuda.is_available(): device = torch.device("cuda")
+    
+    # Else, revert to the default (CPU)
+    else: device = torch.device("cpu")
+        
+    return device
+
+def load_landmark_data():
+    """ 
+    Summary: to load landmark data and get their loader
+    """
     print(f"Loading data from: {PATH_TO_LANDMARK_DATA}")
     train_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Train")
     test_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Test") 
@@ -199,18 +189,6 @@ def load_landmark_data():
 
     return train_loader,valid_loader,test_loader
 
-def load_device():
-    
-    # if a macOs then use mps
-    if torch.backends.mps.is_built(): device = torch.device("mps")
-    
-    # elif a GPU is available, use it
-    elif torch.cuda.is_available(): device = torch.device("cuda")
-    
-    # Else, revert to the default (CPU)
-    else: device = torch.device("cpu")
-        
-    return device
 
 def show_images(loader):
     counter=0
@@ -232,16 +210,21 @@ if __name__ == "__main__":
     pathlib.Path(train_datapath).mkdir(parents=True, exist_ok=True)
     pathlib.Path(test_datapath).mkdir(parents=True, exist_ok=True)
     train,test = save_landmarks_disk()
+    
     quantified_d = dict((k, len(v)) for k, v in train.items())
+    
     with open(r"results\training\skipped_data.txt", "a") as f:
         f.write(f"{str(quantified_d)}\n")
+    
     for class_name, image_paths in train.items():
         with open(r"results\training\skipped_data.txt", "a") as f:
             f.write(f"{class_name}: ")
             for path in image_paths:
                 f.write(f"{path}\n")
             f.write("\n")
+            
     quantified_d = dict((k, len(v)) for k, v in test.items())
+    
     with open(r"results\training\skipped_data.txt", "a") as f:
         f.write(f"{str(quantified_d)}\n")
     for class_name, image_paths in test.items():
@@ -250,6 +233,7 @@ if __name__ == "__main__":
             for path in image_paths:
                 f.write(f"{path}\n")
             f.write("\n")
+            
     # train_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Train")
     # test_datapath = os.path.join(PATH_TO_LANDMARK_DATA,r"Test") 
     # pathlib.Path(train_datapath).mkdir(parents=True, exist_ok=True)

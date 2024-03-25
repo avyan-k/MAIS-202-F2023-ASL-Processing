@@ -15,26 +15,36 @@ import os
 DEVICE = ld.load_device()
 
 class MLP_model(nn.Module):
-
-  def __init__(self,layers, neurons_per_layer,dropout=0.5, input_shape = (22,3)):
+  """Our MLP model
+  Args:
+      layers: total num of layers (excluding the output layer)
+      neurons_per_layer: num of neurons per layer
+      dropout: % of neurons dropping our after each layer
+      input_shape: shape of the input array [21,2] (21 hand landmarks and 2 dimensions (x,y))
+      network: Module list of layers
+  """
+  def __init__(self,layers, neurons_per_layer,dropout=0.5, input_shape = (21,2)):
+    
     super(MLP_model, self).__init__() 
-    input_neurons = input_shape[0] * input_shape[1]
+    input_neurons = input_shape[0] * input_shape[1] # total num of neurons in input layer
     self.dropout = dropout
-    self.network = nn.ModuleList()
-    self.network.append(nn.Linear(input_neurons, neurons_per_layer))
-    for x in range(layers-1):
+    self.network = nn.ModuleList() # initialize empty module list
+    self.network.append(nn.Linear(input_neurons, neurons_per_layer)) # input layer
+    
+    for x in range(layers-1): # hidden layers 
         self.network.append(nn.Linear(neurons_per_layer, neurons_per_layer*2))
         neurons_per_layer *= 2
-    self.network.append(nn.Linear(neurons_per_layer, 27))
-
+    self.network.append(nn.Linear(neurons_per_layer, 27)) # output layers with 27 classes
+  
   def forward(self, x):
       x = torch.flatten(x, start_dim = 1) # Flatten to a 1D vector
       x = (F.batch_norm(x.T, training=True,running_mean=torch.zeros(x.shape[0]).to(DEVICE),running_var=torch.ones(x.shape[0]).to(DEVICE))).T
+      
       for layer in self.network:
-          x = F.leaky_relu(layer(x))
+          x = F.leaky_relu(layer(x)) # ReLU activation function
           x = F.dropout(x,self.dropout)
       return x
-
+    
 def train_model(model,input_shape,train_loader,valid_loader, num_epochs = 200,number_of_validations = 3,learning_rate = 0.001, weight_decay=0.001):
   
   losses = np.empty(num_epochs)
@@ -55,6 +65,7 @@ def train_model(model,input_shape,train_loader,valid_loader, num_epochs = 200,nu
   val_iteration = len(train_loader) // number_of_validations
   for epoch in tqdm(range(num_epochs),desc="Epoch",position=3,leave=False):
     for iteration, (X_train, y_train) in enumerate(tqdm((train_loader),desc="Iteration",position=4,leave=False)):
+      
       # resets all gradients to 0 after each batch
       optimizer.zero_grad()
 
@@ -131,14 +142,6 @@ def logging_result(loss,epoch,start,losses):
   text_file.write(f"It has now been {current} since the beginning of the program\n")
   text_file.close()
   
-  
-def to_see_model(path):
-  
-  model=torch.load(path, map_location=DEVICE)
-  text_file = open(r"our_models/model1.txt", "w") 
-  print(model, file=text_file)
-  text_file.close()
-  
 def plot_losses(losses):
   xh = np.arange(0,number_of_epochs)
   plt.plot(xh, losses, color = 'b', marker = ',',label = "Loss") 
@@ -148,7 +151,7 @@ def plot_losses(losses):
   plt.legend() 
   plt.show()
   
-  
+# Get accuracy
 def test(cnn, test_loader):
   
   testing_accuracy_sum = 0

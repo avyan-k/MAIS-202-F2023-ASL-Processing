@@ -54,3 +54,7 @@ Error fixed, just needed to unsqueeze it.
 Updated README.md and Recorded Demo
 
 Project Completed
+
+# Update - Tracy - March 25th 2024
+
+Added comments and cleaned the code by remove unused files and code

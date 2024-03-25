@@ -17,8 +17,16 @@ import predict
 
 DEVICE = ld.load_device()
 
-# get most recent image and shaped in right size and format
+# 
 def croped_shaped_image(folder_path):
+    """ Get most recent image and shaped in right size and format
+
+    Args:
+        folder_path : path of where the array images are saved
+
+    Returns:
+        Resized to (512,512) of the most recent image
+    """
     if not os.path.isdir(folder_path):
         print(f"Error: Folder '{folder_path}' does not exist.")
         return None
@@ -43,6 +51,11 @@ def croped_shaped_image(folder_path):
     return resized_img
 
 def getLetter():
+    """Give the model the most recent image to predict the letter
+    
+    Returns:
+        Returns the letter with the highest propability
+    """
     X = croped_shaped_image("images/saved_arrays")
     image_array = np.array(X.convert('RGB'))
     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image_array)
@@ -54,13 +67,19 @@ def getLetter():
     return predict.ALPHABET[letter_prediction]
 
 def save_image(image_array, folder_path, filename):
-  if not os.path.exists(folder_path):
-    os.makedirs(folder_path)
-  # Convert the NumPy array to a PIL Image
-  image = Image.fromarray(image_array.astype(np.uint8))
-  # Save the image as a PNG file
-  image.save(os.path.join(folder_path, filename))
-  print(f"Image saved successfully: {os.path.join(folder_path, filename)}")
+    """Saves numpy array to given path as the give filenmae
+    Args:
+        image_array (numpy array):  image we are saving
+        folder_path (path): where we are saving the image
+        filename (String): filename of saved image
+    """
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+    # Convert the NumPy array to a PIL Image
+    image = Image.fromarray(image_array.astype(np.uint8))
+    # Save the image as a PNG file
+    image.save(os.path.join(folder_path, filename))
+    print(f"Image saved successfully: {os.path.join(folder_path, filename)}")
   
 app = Flask(__name__)
 
@@ -70,6 +89,10 @@ def index():
 
 @app.route("/receive",methods=["POST"])
 def receive_data():
+    """ Gets a 1D array from the webcam, after resizing, and saving it we return the predicted letter
+    Returns:
+        String: predicted letter
+    """
     data = request.get_json()
     # image array from main.jss
     image_data = data.get('imageData', [])

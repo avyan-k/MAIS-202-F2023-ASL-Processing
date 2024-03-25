@@ -38,8 +38,5 @@ def convert():
     image.save('image.png')
     image.show()
     
-
-# def predicted():
-    
 if __name__ == "__main__":
     convert()
