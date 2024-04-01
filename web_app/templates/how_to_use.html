@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAIS-202-F2023-ASL-PROCESSING</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='main.js') }}" defer></script>   
+</head>
+<body>
+    <header>
+        <div id="top">
+            <h1>American Sign Language Translator Instructions</h1>
+            <br style="height:20px">
+        </div>
+    </header>
+    <div id="steps">
+        <h2>How to use the ASL Translator</h2>
+        <ol>
+            <li>To start the webcam, click the 'Start Webcam' button.</li>
+            <li>Align your hand to the desired ASL hand sign and click 'Take Picture' to take the picture and have it translated.</li>
+            <li>A notification for download will pop up. Save it in the folder called 'images' for the program to interpret.</li>
+            <li>The corresponding letter should pop up on the line below. Repeat step 2 for each letter that needs to be translated.</li>
+            <li>Once you are done, hit the 'Stop Webcam' button to end the webcam.</li>
+        </ol>
+        <br>
+        <a href="/" class="instruc_button" style="font-family : Trebuchet MS"> Go Back To Main Page</a>
+    </div>
+    
+    
+</body>
+</html>

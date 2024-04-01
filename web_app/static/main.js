@@ -6,7 +6,10 @@ const snapButton = document.getElementById('snapButton');
 const canvas = document.getElementById('canvas');
 const capturedImage = document.getElementById('capturedImage');
 const stopButton = document.getElementById('stopButton');
-const generatedText = document.getElementById('translated')
+const generatedText = document.getElementById('translated');
+const resetButton = document.getElementById('resetButton');
+const spaceButton = document.getElementById('spaceButton');
+
 
 let stream;
 let MESSAGE = "";
@@ -23,12 +26,26 @@ startButton.addEventListener('click', async () => {
         videoElement.srcObject = stream;
         startButton.disabled = true;
         stopButton.disabled = false;
-        deleteButton.disabled = false;
         snapButton.disabled = false;
+        
     } catch (error) {
         console.error('Error accessing webcam:', error);
     }
 });
+
+resetButton.addEventListener('click',function() {
+    try {
+        MESSAGE=""
+        generatedText.innerText=MESSAGE
+    } catch(error){
+        console.log("Error accessing webcam", error)
+    }
+})
+
+spaceButton.addEventListener("click",function(){
+    MESSAGE+="\n";
+    generatedText.innerText=MESSAGE
+})
 
 // Delete last letter from MESSAGE
 deleteButton.addEventListener('click', async () => {
@@ -81,6 +98,9 @@ snapButton.addEventListener('click', function () {
     .then(data => {
         MESSAGE = MESSAGE + data.letter;
         generatedText.innerText = MESSAGE;
+        deleteButton.disabled = false;
+        resetButton.disabled = false;
+        spaceButton.disabled = false;
     })
     .catch((error) => {
         console.error('Error:', error);
@@ -107,5 +127,7 @@ stopButton.addEventListener('click', () => {
         stopButton.disabled = true;
         snapButton.disabled = true;
         deleteButton.disabled = true;
+        resetButton.disabled = true;
+        spaceButton.disabled = true;
     }
 });

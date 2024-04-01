@@ -22,6 +22,11 @@ h1 {
     font-family: Trebuchet MS ;
     /* font-family: Bioweapon; */
 }
+
+h3 {
+    font-family: Trebuchet MS ;
+    color: white;
+}
 #top {
     margin: auto;
     width: 80%;
@@ -42,7 +47,16 @@ h1 {
 }
 
 button {
-    background-color: #bc2649; /* Forest Green - Forest Theme */
+    background-color: #bc2649;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.instruc_button {
+    background-color: #bc2649; 
     color: white;
     border: none;
     padding: 10px 20px;
@@ -51,7 +65,7 @@ button {
 }
 
 button:hover {
-    background-color: #edcdc1; /* Slightly Darker Forest Green */
+    background-color: #edcdc1;
 }
 
 button:disabled {
@@ -65,7 +79,7 @@ button:disabled {
 
 }
 body {
-    background-color: #c55662; /* Forest Green - Forest Theme */
+    background-color: #c55662; 
     font-family: Arial, sans-serif;
     margin: 0px;
 }
@@ -74,11 +88,16 @@ main {
     margin-bottom: 40px;
 }
 
+#steps{
+    margin-top: 30px;
+    margin-left: 100px;
+}
+
 #steps h2 {
     font-family: Trebuchet MS ;
     /* font-family: Verdana, Geneva, Tahoma, sans-serif; */
     color: white;
-    margin-left: 100px;
+    
 }
 
 #steps li {
@@ -87,7 +106,6 @@ main {
     color: white;
     font-size: 14pt;
     margin-top: 30px;
-    margin-left: 100px;
 }
 
 #translated{

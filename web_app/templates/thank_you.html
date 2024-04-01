@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAIS-202-F2023-ASL-PROCESSING</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/logo.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='main.js') }}" defer></script>   
+</head>
+<body>
+    <header>
+        <div id="top">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="logo" width="175" height="150" class="logo">
+            <h1>American Sign Language Translator</h1>
+            <br style="height:20px">
+        </div>
+    </header>
+
+    <div id="steps">
+        <h3>{{ message }}</h3>
+        <br>
+        <a href="/" class="instruc_button" style="font-family : Trebuchet MS"> Go Back To Main Page</a>
+    </div>
+    
+</body>
+</html>

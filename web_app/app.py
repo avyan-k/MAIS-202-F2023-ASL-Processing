@@ -21,11 +21,9 @@ DEVICE = ld.load_device()
 def croped_shaped_image(folder_path):
     """ Get most recent image and shaped in right size and format
 
-    Args:
-        folder_path : path of where the array images are saved
+    Args: folder_path : path of where the array images are saved
 
-    Returns:
-        Resized to (512,512) of the most recent image
+    Returns: Resized to (512,512) of the most recent image
     """
     if not os.path.isdir(folder_path):
         print(f"Error: Folder '{folder_path}' does not exist.")
@@ -35,6 +33,7 @@ def croped_shaped_image(folder_path):
     if not png_files:
         print(f"No PNG files found in folder '{folder_path}'.")
         return None
+    
     png_files.sort(key=os.path.getmtime, reverse=True)
     img = Image.open(png_files[0])
     
@@ -83,9 +82,13 @@ def save_image(image_array, folder_path, filename):
   
 app = Flask(__name__)
 
-@app.route("/") # rendering html page
+@app.route("/") # rendering main page
 def index():
     return render_template("index.html", name='Main')
+
+@app.route('/how-to-use') #rendering intruction page
+def how_to_use():
+    return render_template('how_to_use.html')
 
 @app.route("/receive",methods=["POST"])
 def receive_data():
@@ -104,7 +107,17 @@ def receive_data():
     filename = f"image_data_{timestamp}.png"
     save_image(image_data, directory_path, filename)
     letter = getLetter()
+    
     return {'letter': letter}
+
+@app.route("/feedback",methods=["POST"])
+def feedback():
+    rating = request.form['rating']
+    feedback_file = 'feedback.txt'
+    with open(feedback_file, 'a') as file:
+        file.write(f"{rating}\n")
+    return render_template('thank_you.html', message="Thank you for your feedback!")
+
 
 if __name__ == "__main__":
     app.run(port=5000,debug=True)
